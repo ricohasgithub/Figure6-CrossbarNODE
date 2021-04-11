@@ -22,8 +22,16 @@ class Regular_Spiral_Generator():
 
         ax = plt.axes(projection='3d')
         ax.plot3D(self.x, self.y, self.z, 'gray')
-        ax.scatter3D(self.x_obs, self.y_obs, self.z_obs, c=self.z_obs, cmap='Greens')
+        ax.scatter3D(self.x_obs, self.y_obs, self.z_obs, c=self.z_obs, cmap='Blues')
 
         plt.show()
+
+    def get_plot(self):
+        
+        ax = plt.axes(projection='3d')
+        ax.plot3D(self.x, self.y, self.z, 'gray')
+        ax.scatter3D(self.x_obs, self.y_obs, self.z_obs, c=self.z_obs, cmap='Blues')
+
+        return ax
 
 
