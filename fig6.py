@@ -16,8 +16,8 @@ from utils.spiral_generator import Regular_Spiral_Generator
 device_params = {"Vdd": 0.2,
                  "r_wl": 20,
                  "r_bl": 20,
-                 "m": 128,
-                 "n": 128,
+                 "m": 32,
+                 "n": 32,
                  "r_on_mean": 1e4,
                  "r_on_stddev": 1e3,
                  "r_off_mean": 1e5,
@@ -35,7 +35,7 @@ device_params = {"Vdd": 0.2,
             }
 
 # Get regular spiral data with irregularly sampled time intervals (+ noise)
-data_gen = Regular_Spiral_Generator()
+data_gen = Regular_Spiral_Generator(50, 150)
 ground_truth = data_gen.get_plot()
 plt.savefig('./output/ground_truth.png', dpi=600, transparent=True)
 

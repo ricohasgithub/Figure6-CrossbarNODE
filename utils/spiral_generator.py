@@ -1,4 +1,6 @@
 
+import torch
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -6,17 +8,25 @@ from mpl_toolkits import mplot3d
 
 class Regular_Spiral_Generator():
 
-    def __init__(self):
+    def __init__(self, n_pts, cutoff):
+
+        # z doubles as time
 
         # Data for a three-dimensional line
-        self.z = np.linspace(0, 15, 1000)
-        self.x = np.sin(self.z)
-        self.y = np.cos(self.z)
+        self.z = torch.linspace(0, 20, n_pts)
+        self.x = torch.sin(self.z)
+        self.y = torch.cos(self.z)
 
         # Data for three-dimensional irregular time sampled observations
-        self.z_obs = 15 * np.random.random(100)
-        self.x_obs = np.sin(self.z_obs) + 0.1 * np.random.randn(100)
-        self.y_obs = np.cos(self.z_obs) + 0.1 * np.random.randn(100)
+        self.z_obs = 20 * torch.rand(100)
+        self.x_obs = torch.sin(self.z_obs) + 0.1 * np.random.randn(100)
+        self.y_obs = torch.cos(self.z_obs) + 0.1 * np.random.randn(100)
+
+        self.t = self.z
+        self.d = torch.cat((self.x, self.y), axis=0)
+
+        self.train = self.d[:cutoff]
+        self.validation = self.d[cutoff:]
 
     def plot(self):
 
