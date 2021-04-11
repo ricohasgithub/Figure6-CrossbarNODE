@@ -14,3 +14,4 @@ from utils.spiral_generator import Regular_Spiral_Generator
 
 data_gen = Regular_Spiral_Generator()
 data_gen.plot()
+
