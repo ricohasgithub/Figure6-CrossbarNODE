@@ -1,11 +1,14 @@
 
 import torch
 import torch.nn as nn
+import torch.optim as optim
 
 from torchdiffeq import odeint
 
-from utils.linear import Linear
 from crossbar.crossbar import crossbar
+
+from utils.linear import Linear
+from utils.running_avg_meter import Running_Average_Meter
 
 class ODE_Func(nn.Module):
 
@@ -23,3 +26,14 @@ class ODE_Func(nn.Module):
         out = self.nonlinear(out)
         out = self.linear2(out)
         return out
+
+    def remap(self):
+        self.linear1.remap()
+        self.linear2.remap()
+
+    def use_cb(self, state):
+        self.linear1.use_cb(state)
+        self.linear2.use_cb(state)
+
+def train(ode_model, train_data, test_data, epochs, method, step_size):
+    pass
