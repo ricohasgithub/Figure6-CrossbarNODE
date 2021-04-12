@@ -7,9 +7,7 @@ import torch.optim as optim
 
 from torchdiffeq import odeint
 from crossbar.crossbar import crossbar
-
 from utils.linear import Linear
-from utils.running_avg_meter import Running_Average_Meter
 
 class ODE_Func(nn.Module):
 
@@ -18,12 +16,14 @@ class ODE_Func(nn.Module):
         super(ODE_Func, self).__init__()
 
         # Model layers
-        self.linear1 = Linear(input_size, hidden_layer_size, cb)
-        self.linear2 = Linear(hidden_layer_size, output_size, cb)
+        self.linear1 = nn.Linear(input_size, hidden_layer_size)
+        self.linear2 = nn.Linear(hidden_layer_size, output_size)
         self.nonlinear = nn.Tanh()
 
     def forward(self, t, y):
-        out = self.linear1(y**3)
+        # y = torch.transpose(y, 0, 1)
+        # print(y.size())
+        out = self.linear1(y)
         out = self.nonlinear(out)
         out = self.linear2(out)
         return out
@@ -36,24 +36,35 @@ class ODE_Func(nn.Module):
         self.linear1.use_cb(state)
         self.linear2.use_cb(state)
 
-def train(ode_model, data_gen, epochs, method, step_size):
-    
-    optimizer = optim.Adam(ode_model.parameters(), lr=0.01)
-    loss_function = nn.MSELoss()
+def train(ode_model, data_gen, iters, method="dopri5", step_size="1"):
 
+    #ode_model.use_cb(True)
+    
+    optimizer = optim.RMSprop(ode_model.parameters(), lr=1e-3)
     end = time.time()
 
-    time_meter = Running_Average_Meter(0.97)
-    loss_meter = Running_Average_Meter(0.97)
+    for itr in range(1, iters + 1):
 
-    for epoch in epochs:
+        # Prepare batch
+        optimizer.zero_grad()
+        batch_y0, batch_t, batch_y = data_gen.get_random_batch()
+        
+        # Make prediction
+        pred_y = odeint(ode_model, batch_y0, batch_t)
 
-        for i, (example, label) in enumerate(y):
-            optimizer.zero_grad()
-            prediction = ode_model(example)
-            loss = loss_function(prediction, label)
-            training_loss.append(loss)
-            loss.backward()
-            optimizer.step()
+        # Calculate loss and backprop
+        loss = torch.mean(torch.abs(pred_y - batch_y))
+        loss.backward()
+        optimizer.step()
 
-        print("EPOCH: ", epoch)
+        print('Iter {:04d} | Total Loss {:.6f}'.format(itr, loss.item()))
+
+    with torch.no_grad():
+
+        true_y0 = data_gen.z0
+        true_y = data_gen.z
+
+        pred_y = odeint(ode_model, true_y0, true_y)
+
+        loss = torch.mean(torch.abs(pred_y - true_y))
+        data_gen.plot_prediction(true_y, pred_y)
