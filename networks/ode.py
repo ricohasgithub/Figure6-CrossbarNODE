@@ -62,7 +62,7 @@ def train(ode_model, data_gen, iters, method="dopri5", step_size="1"):
 
     with torch.no_grad():
 
-        pred_y = odeint(ode_model, data_gen.true_y0, data_gen.z)
+        pred_y = odeint(ode_model, data_gen.true_y0, data_gen.t)
 
         loss = torch.mean(torch.abs(pred_y - data_gen.true_y))
         data_gen.plot_prediction(data_gen.true_y, pred_y)

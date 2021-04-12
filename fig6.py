@@ -49,7 +49,7 @@ ground_truth = data_gen.get_plot()
 plt.savefig('./output/ground_truth.png', dpi=600, transparent=True)
 
 # Build and train models
-ode_net = ODE_Net(2, 50, 2, crossbar(device_params))
+ode_net = ODE_Net(3, 50, 3, crossbar(device_params))
 
 ode_train(ode_net, data_gen, 500)
 
