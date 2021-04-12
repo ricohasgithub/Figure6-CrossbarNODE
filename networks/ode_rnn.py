@@ -23,5 +23,10 @@ class ODE_RNN(nn.Module):
         
         super(ODE_RNN, self).__init__()
 
+        # Initialize model instance crossbar
         self.cb = crossbar(device_params)
+
+        # Model layers
+        self.rnn = nn.GRUCell()
+        self.decoder = Linear(hidden_layer_size, output_size, self.cb)
 
