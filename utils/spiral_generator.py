@@ -8,7 +8,13 @@ from mpl_toolkits import mplot3d
 
 class Regular_Spiral_Generator():
 
-    def __init__(self, n_pts, cutoff):
+    def __init__(self, n_pts, cutoff, batch_time, batch_size):
+
+        # Store instance variables
+        self.n_pts = n_pts
+        self.cutoff = cutoff
+        self.batch_time = batch_time
+        self.batch_size = batch_size
 
         # z doubles as time
 
@@ -44,4 +50,9 @@ class Regular_Spiral_Generator():
 
         return ax
 
-
+    def get_random_batch(self):
+        s = torch.from_numpy(np.random.choice(np.arange(self.n_pts - self.batch_time, dtype=np.int64), self.batch_size, replace=False))
+        batch_y0 = self.d[s]  # (M, D)
+        batch_t = self.t[:self.batch_time]  # (T)
+        batch_y = torch.stack([self.d[s + i] for i in range(self.batch_time)], dim=0)  # (T, M, D)
+        return batch_y0.to(), batch_t.to(), batch_y.to()
