@@ -17,15 +17,16 @@ class ODE_Func(nn.Module):
 
         # Model layers
         self.linear1 = nn.Linear(input_size, hidden_layer_size)
-        self.linear2 = nn.Linear(hidden_layer_size, output_size)
-        self.nonlinear = nn.Tanh()
+        self.linear2 = nn.Linear(hidden_layer_size, hidden_layer_size)
+        self.linear3 = nn.Linear(hidden_layer_size, output_size)
+        self.nonlinear = nn.ELU()
 
     def forward(self, t, y):
         # y = torch.transpose(y, 0, 1)
         # print(y.size())
-        out = self.linear1(y)
-        out = self.nonlinear(out)
-        out = self.linear2(out)
+        out = self.nonlinear(self.linear1(y))
+        out = self.nonlinear(self.linear2(out))
+        out = self.linear3(out)
         return out
 
     def remap(self):
@@ -61,10 +62,7 @@ def train(ode_model, data_gen, iters, method="dopri5", step_size="1"):
 
     with torch.no_grad():
 
-        true_y0 = data_gen.z0
-        true_y = data_gen.z
+        pred_y = odeint(ode_model, data_gen.true_y0, data_gen.z)
 
-        pred_y = odeint(ode_model, true_y0, true_y)
-
-        loss = torch.mean(torch.abs(pred_y - true_y))
-        data_gen.plot_prediction(true_y, pred_y)
+        loss = torch.mean(torch.abs(pred_y - data_gen.true_y))
+        data_gen.plot_prediction(data_gen.true_y, pred_y)

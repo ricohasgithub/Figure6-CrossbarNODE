@@ -24,14 +24,15 @@ class Regular_Spiral_Generator():
         self.y = torch.cos(self.z).float()
 
         # Data for three-dimensional irregular time sampled observations
-        self.z_obs = (20 * torch.rand(100)).float()
-        self.x_obs = (torch.sin(self.z_obs) + 0.1 * np.random.randn(100)).float()
-        self.y_obs = (torch.cos(self.z_obs) + 0.1 * np.random.randn(100)).float()
+        self.z_obs = (20 * torch.rand(n_pts)).float()
+        self.x_obs = (torch.sin(self.z_obs) + 0.1 * np.random.randn(n_pts)).float()
+        self.y_obs = (torch.cos(self.z_obs) + 0.1 * np.random.randn(n_pts)).float()
 
         self.t = self.z.float()
         self.obs = torch.stack((self.x_obs, self.y_obs), dim=1).float()
 
-        self.z0 = self.z[0]
+        self.true_y = torch.stack((self.x, self.y), dim=1).float()
+        self.true_y0 = self.true_y[0]
 
     def plot(self):
 
@@ -72,4 +73,6 @@ class Regular_Spiral_Generator():
         ax.plot3D(self.x, self.y, self.z, 'gray')
         ax.scatter3D(self.x_obs, self.y_obs, self.z_obs, c=self.z_obs, cmap='Blues')
         ax.plot3D(pred_y[:, 0], pred_y[:, 1], self.z, 'red')
+
+        plt.savefig('./output/ode.png', dpi=600, transparent=True)
         plt.show()
