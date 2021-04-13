@@ -19,14 +19,17 @@ class ODE_Func(nn.Module):
         self.linear1 = nn.Linear(input_size, hidden_layer_size)
         self.linear2 = nn.Linear(hidden_layer_size, hidden_layer_size)
         self.linear3 = nn.Linear(hidden_layer_size, output_size)
-        self.nonlinear = nn.ELU()
+        self.nonlinear = nn.Tanh()
 
     def forward(self, t, y):
         # y = torch.transpose(y, 0, 1)
         # print(y.size())
-        out = self.nonlinear(self.linear1(y))
-        out = self.nonlinear(self.linear2(out))
-        out = self.linear3(out)
+        # out = self.nonlinear(self.linear1(y))
+        # out = self.nonlinear(self.linear2(out))
+        # out = self.linear3(out)
+        out = self.linear1(y)
+        out = self.linear2(self.nonlinear(out))
+        out = self.linear3(self.nonlinear(out))
         return out
 
     def remap(self):
@@ -37,12 +40,11 @@ class ODE_Func(nn.Module):
         self.linear1.use_cb(state)
         self.linear2.use_cb(state)
 
-def train(ode_model, data_gen, iters, method="dopri5", step_size="1"):
+def train(model, data_gen, iters, method="dopri5", step_size="1"):
 
     #ode_model.use_cb(True)
     
-    optimizer = optim.RMSprop(ode_model.parameters(), lr=1e-3)
-    end = time.time()
+    optimizer = optim.Adam(model.parameters(), lr=0.01)
 
     for itr in range(1, iters + 1):
 
@@ -51,7 +53,7 @@ def train(ode_model, data_gen, iters, method="dopri5", step_size="1"):
         batch_y0, batch_t, batch_y = data_gen.get_random_batch()
         
         # Make prediction
-        pred_y = odeint(ode_model, batch_y0, batch_t)
+        pred_y = odeint(model, batch_y0, batch_t)
 
         # Calculate loss and backprop
         loss = torch.mean(torch.abs(pred_y - batch_y))
@@ -60,9 +62,18 @@ def train(ode_model, data_gen, iters, method="dopri5", step_size="1"):
 
         print('Iter {:04d} | Total Loss {:.6f}'.format(itr, loss.item()))
 
+        # if itr%20 == 0:
+
+        #     with torch.no_grad():
+
+        #         pred_y = odeint(model, data_gen.true_y0, data_gen.t)
+
+        #         loss = torch.mean(torch.abs(pred_y - data_gen.true_y))
+        #         data_gen.plot_prediction(data_gen.true_y, pred_y)
+
     with torch.no_grad():
 
-        pred_y = odeint(ode_model, data_gen.true_y0, data_gen.t)
+        pred_y = odeint(model, data_gen.true_y0, data_gen.t)
 
         loss = torch.mean(torch.abs(pred_y - data_gen.true_y))
         data_gen.plot_prediction(data_gen.true_y, pred_y)
