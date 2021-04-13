@@ -47,8 +47,8 @@ class ODE_RNN(nn.Module):
     def forward(self, t, x, method="dopri5", step_size=20):
         
         t = t.reshape(-1).float()
-        h = torch.zeros(self.hidden_layer_size, 2)
-        h_i = torch.zeros(self.hidden_layer_size, 2)
+        h = torch.zeros(self.hidden_layer_size, 1)
+        h_i = torch.zeros(self.hidden_layer_size, 1)
 
         # RNN iteration
         for i, x_i in enumerate(x):
@@ -84,7 +84,6 @@ def train(model, data_gen, epochs):
         for i, (example, label) in enumerate(examples):
             
             optimizer.zero_grad()
-            label = label.reshape(-1)
             prediction = model(example[1], example[0])
 
             loss = loss_function(prediction, label)
