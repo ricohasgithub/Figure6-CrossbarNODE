@@ -47,16 +47,17 @@ class ODE_RNN(nn.Module):
     def forward(self, t, x, method="dopri5", step_size=20):
         
         t = t.reshape(-1).float()
-        h_i = torch.zeros(self.hidden_layer_size, 1)
+        h = torch.zeros(self.hidden_layer_size, 2)
+        h_i = torch.zeros(self.hidden_layer_size, 2)
 
         # RNN iteration
         for i, x_i in enumerate(x):
             if i > 0:
-                print(t[i-1 : i+1].view(-1))
-                h_i = odeint(self.ode_func, h_i, t[i-1 : i+1])
-            h_i = self.nonlinear(self.linear_in(x_i) + self.linear_hidden(h_i))
+                # print(h_i.size())
+                h_i = odeint(self.ode_func, h, t[i-1 : i+1])[1]
+            h = self.nonlinear(self.linear_in(x_i) + self.linear_hidden(h_i))
 
-        out = self.decoder(h_i)
+        out = self.decoder(h)
         return out
 
     def use_cb(self, state):
