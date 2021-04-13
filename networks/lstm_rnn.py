@@ -42,8 +42,6 @@ def train(model, data_gen, iters):
         optimizer.zero_grad()
         batch_y0, batch_t, batch_y = data_gen.get_random_batch()
 
-        print(batch_y0.size())
-
         pred_y = model(batch_y)
 
         loss = loss_func(pred_y, batch_y)
@@ -53,5 +51,8 @@ def train(model, data_gen, iters):
         print('Iter {:04d} | Total Loss {:.6f}'.format(itr, loss))
 
     with torch.no_grad():
-        pred_y = model(torch.tensor(data_gen.true_y0))
+        # pred_y = model(torch.tensor(torch.reshape(data_gen.true_y0, (1, 1, 3))))
+        print(data_gen.obs.size())
+        pred_y = model(data_gen.obs)
+        print(pred_y.size())
         data_gen.plot_prediction(data_gen.true_y, pred_y)
