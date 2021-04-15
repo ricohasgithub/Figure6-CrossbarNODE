@@ -14,7 +14,7 @@ class ODE_Func(nn.Module):
 
     def __init__(self, hidden_layer_size, cb):
         super(ODE_Func, self).__init__()
-        self.linear = Linear(hidden_layer_size, hidden_layer_size, cb)
+        self.linear = nn.Linear(hidden_layer_size, hidden_layer_size)
         self.nonlinear = nn.Tanh()
 
     def forward(self, t, x):
@@ -39,11 +39,9 @@ class ODE_RNN(nn.Module):
         self.hidden_layer_size = hidden_layer_size
 
         # Model layers
-        self.linear_in = Linear(input_size, hidden_layer_size, self.cb)
-        self.linear_hidden = Linear(hidden_layer_size, hidden_layer_size, self.cb)
-        self.decoder = Linear(hidden_layer_size, output_size, self.cb)
-
-        #self.rnn_cell = nn.GRUCell(input_size, hidden_layer_size)
+        self.linear_in = nn.Linear(input_size, hidden_layer_size)
+        self.linear_hidden = nn.Linear(hidden_layer_size, hidden_layer_size)
+        self.decoder = nn.Linear(hidden_layer_size, output_size)
 
         self.ode_func = ODE_Func(hidden_layer_size, self.cb)
         self.nonlinear = nn.Tanh()
@@ -51,17 +49,17 @@ class ODE_RNN(nn.Module):
     def forward(self, t, x, method="dopri5", step_size=20):
         
         t = t.reshape(-1).float()
-        h_i = torch.zeros(self.hidden_layer_size, 1)
-        h_ip = torch.zeros(self.hidden_layer_size, 1)
+        h = torch.zeros(1, self.hidden_layer_size)
+        h_i = torch.zeros(1, self.hidden_layer_size)
 
         # RNN iteration
         for i, x_i in enumerate(x):
+            x_i = torch.transpose(x_i, 0, 1)
             if i > 0:
-                h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1])[1]
-                h_i = self.nonlinear(self.linear_in(x_i) + self.linear_hidden(h_ip))
-            #h_i = self.rnn_cell(x_i, h_ip)
+                h_i = odeint(self.ode_func, h, t[i-1 : i+1])[1]
+            h = self.nonlinear(self.linear_in(x_i) + self.linear_hidden(h_i))
 
-        out = self.decoder(h_i)
+        out = self.decoder(h)
         return out
 
     def use_cb(self, state):
@@ -71,8 +69,6 @@ class ODE_RNN(nn.Module):
         self.decoder.use_cb(state)
 
 def train(model, data_gen, epochs):
-
-    #model.use_cb(True)
 
     examples = data_gen.train_data
 
@@ -90,7 +86,7 @@ def train(model, data_gen, epochs):
             optimizer.zero_grad()
             prediction = model(example[1], example[0])
 
-            loss = loss_function(prediction, label)
+            loss = loss_function(prediction, label.transpose(0, 1))
             epoch_loss.append(loss)
             loss.backward()
             optimizer.step()
@@ -114,13 +110,11 @@ def train(model, data_gen, epochs):
     
     with torch.no_grad():
         for i in range(length):
-            prediction = model((t + dt), seq).reshape(1, -1, 1)
+            prediction = model((t + dt), seq).transpose(0, 1).reshape(1, -1, 1)
             seq = torch.cat((seq[1:], prediction), axis=0)
             all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
             t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
             output.append(prediction)
-            print("t: ", all_t[i])
-            print("output: ", output[i])
 
     output, times = torch.cat(output, axis=0), torch.cat(all_t, axis=0)
 

@@ -53,13 +53,12 @@ device_params = {"Vdd": 0.2,
 # ground_truth = data_gen.get_plot()
 # plt.savefig('./output/ground_truth.png', dpi=600, transparent=True)
 
-data_gen = Epoch_Spiral_Generator(150, 50, 20, 10, 2)
-data_gen2 = Regular_Spiral_Generator(50, 50, 25, 10, 20)
+data_gen = Epoch_Spiral_Generator(40, 10, 20, 10, 2)
 
 # Build and train models
 
 ode_rnn = ODE_RNN(2, 6, 2, device_params)
-ode_rnn_train(ode_rnn, data_gen, 20)
+output = ode_rnn_train(ode_rnn, data_gen, 30)
 
 # ode_net = ODE_Net(3, 50, 3, crossbar(device_params))
 # iter_train(ode_net, data_gen2, 500)
@@ -69,6 +68,7 @@ ode_rnn_train(ode_rnn, data_gen, 20)
 
 # Test models
 
+plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
 
 # Display all remaining plots
 plt.show()
