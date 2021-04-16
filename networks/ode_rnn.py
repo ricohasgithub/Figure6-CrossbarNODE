@@ -15,11 +15,12 @@ class ODE_Func(nn.Module):
     def __init__(self, hidden_layer_size, cb):
         super(ODE_Func, self).__init__()
         self.linear = Linear(hidden_layer_size, hidden_layer_size, cb)
+        self.linear2 = Linear(hidden_layer_size, hidden_layer_size, cb)
         self.nonlinear = nn.Tanh()
 
     def forward(self, t, x):
         # x = torch.transpose(x, 0, 1)
-        out = self.nonlinear(self.linear(x))
+        out = self.linear2(self.nonlinear(self.linear(x)))
         return out
 
     def use_cb(self, state):
@@ -115,12 +116,11 @@ def train(model, data_gen, epochs):
     with torch.no_grad():
         for i in range(length):
             prediction = model((t + dt), seq).reshape(1, -1, 1)
+            print(prediction)
             seq = torch.cat((seq[1:], prediction), axis=0)
             all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
             t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
             output.append(prediction)
-            print("t: ", all_t[i])
-            print("output: ", output[i])
 
     output, times = torch.cat(output, axis=0), torch.cat(all_t, axis=0)
 
@@ -128,12 +128,13 @@ def train(model, data_gen, epochs):
 
     o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), times.squeeze()
     # o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), output[:, 2].squeeze()
-    ax.plot3D(o1, o2, o3, 'blue')
-    ax.scatter3D(o1, o2, o3, 'blue')
+    ax.plot3D(o1, o2, o3, 'red')
+    ax.scatter3D(o1, o2, o3, 'red')
     
     d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
     # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.y[2, :].squeeze()
-    ax.plot(d1, d2, d3, 'gray')
+    # ax.plot3D(d1, d2, d3, 'gray')
+    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
     ax.scatter3D(d1, d2, d3, 'gray')
 
     plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)

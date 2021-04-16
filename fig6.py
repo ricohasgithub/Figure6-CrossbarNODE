@@ -53,18 +53,19 @@ device_params = {"Vdd": 0.2,
 # ground_truth = data_gen.get_plot()
 # plt.savefig('./output/ground_truth.png', dpi=600, transparent=True)
 
+# 40, 10, 20, 10, 2
 data_gen = Epoch_Spiral_Generator(40, 10, 20, 10, 2)
 
 # Build and train models
 
-ode_rnn = ODE_RNN(2, 6, 2, device_params)
-output = ode_rnn_train(ode_rnn, data_gen, 30)
+# ode_rnn = ODE_RNN(2, 6, 2, device_params)
+# output = ode_rnn_train(ode_rnn, data_gen, 20)
 
 # ode_net = ODE_Net(3, 50, 3, crossbar(device_params))
 # iter_train(ode_net, data_gen2, 500)
 
-# lstm_rnn = LSTM_RNN(3, 50, 3, device_params)
-# lstm_train(lstm_rnn, data_gen, 2000)
+lstm_rnn = LSTM_RNN(2, 6, 2, device_params)
+lstm_train(lstm_rnn, data_gen, 30)
 
 # Test models
 
