@@ -58,18 +58,27 @@ data_gen = Epoch_Spiral_Generator(40, 10, 20, 10, 2)
 
 # Build and train models
 
-# ode_rnn = ODE_RNN(2, 6, 2, device_params)
-# output = ode_rnn_train(ode_rnn, data_gen, 20)
+epochs = 30
+
+ode_rnn = ODE_RNN(2, 6, 2, device_params)
+losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
+
+# lstm_rnn = LSTM_RNN(2, 6, 2, device_params)
+# output_lstm = lstm_train(lstm_rnn, data_gen, 100)
 
 # ode_net = ODE_Net(3, 50, 3, crossbar(device_params))
 # iter_train(ode_net, data_gen2, 500)
 
-lstm_rnn = LSTM_RNN(2, 6, 2, device_params)
-lstm_train(lstm_rnn, data_gen, 30)
-
 # Test models
 
-plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
-
 # Display all remaining plots
+# plt.setup(output_ode_rnn)
+# plt.setup(output_lstm)
+
+# Plot loss history
+fig1, ax_loss = plt.subplots()
+fig1.suptitle('ODE-RNN Error')
+
+ax_loss.plot(list(range(epochs)), losses_ode_rnn, linewidth=1, marker = 's', color='c')
+
 plt.show()

@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+import random
 import matplotlib.pyplot as plt
 
 from torchdiffeq import odeint
@@ -84,6 +85,7 @@ def train(model, data_gen, epochs):
 
     for epoch in range(epochs):
 
+        random.shuffle(examples)
         epoch_loss = []
 
         for i, (example, label) in enumerate(examples):
@@ -116,7 +118,6 @@ def train(model, data_gen, epochs):
     with torch.no_grad():
         for i in range(length):
             prediction = model((t + dt), seq).reshape(1, -1, 1)
-            print(prediction)
             seq = torch.cat((seq[1:], prediction), axis=0)
             all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
             t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
@@ -139,4 +140,4 @@ def train(model, data_gen, epochs):
 
     plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
 
-    return ax
+    return loss_history, ax

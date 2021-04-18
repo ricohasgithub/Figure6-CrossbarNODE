@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+import random
 import matplotlib.pyplot as plt
 
 from utils.linear import Linear
@@ -45,12 +46,13 @@ def train(model, data_gen, epochs):
 
     for epoch in range(epochs):
 
+        random.shuffle(examples)
         epoch_loss = []
 
         for i, (example, label) in enumerate(examples):
 
             optimizer.zero_grad()
-            prediction = model(example[0].reshape(-1, 10, 2)).reshape(2, 1)
+            prediction = model(example[0].reshape(-1, data_gen.train_window, 2)).reshape(2, 1)
 
             loss = loss_function(prediction, label)
             epoch_loss.append(loss)
@@ -76,7 +78,7 @@ def train(model, data_gen, epochs):
     
     with torch.no_grad():
         for i in range(length):
-            prediction = model(seq.reshape(-1, 10, 2)).reshape(2, 1).reshape(1, -1, 1)
+            prediction = model(seq.reshape(-1, data_gen.train_window, 2)).reshape(2, 1).reshape(1, -1, 1)
             seq = torch.cat((seq[1:], prediction), axis=0)
             all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
             t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
@@ -88,8 +90,8 @@ def train(model, data_gen, epochs):
 
     o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), times.squeeze()
     # o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), output[:, 2].squeeze()
-    ax.plot3D(o1, o2, o3, 'red')
-    ax.scatter3D(o1, o2, o3, 'red')
+    ax.plot3D(o1, o2, o3, 'blue')
+    ax.scatter3D(o1, o2, o3, 'blue')
     
     d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
     # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.y[2, :].squeeze()
@@ -97,7 +99,7 @@ def train(model, data_gen, epochs):
     ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
     ax.scatter3D(d1, d2, d3, 'gray')
 
-    plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
+    plt.savefig('./output/lstm_rnn.png', dpi=600, transparent=True)
 
     return ax
 
