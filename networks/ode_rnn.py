@@ -54,28 +54,38 @@ class ODE_RNN(nn.Module):
     def forward(self, t, x, method="dopri5", step_size=20):
         
         t = t.reshape(-1).float()
-        # Size is train_window
-        num_predict = t.shape[0]
-        # num_predict = 1
+        N = t.shape[0]
 
         # Model current output hidden state dynamics
         h_i = torch.zeros(self.hidden_layer_size, 1)
         h_ip = torch.zeros(self.hidden_layer_size, 1)
-        output = torch.zeros(num_predict, self.output_size)
+        output = torch.zeros(N, self.output_size)
 
-        # Predict sequence of length num_predict from inputs x and t
-        for j in range(num_predict):
+        # Initial layer (h0)
+        if t[0] > 0:
+            h_ip = odeint(self.ode_func, h_i, torch.tensor([0.0, t[0]]))[1]
 
-            # RNN iteration
-            for i, x_i in enumerate(x):
-                if i > 0:
-                    h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1])[1]
-                    # h_i = self.nonlinear(self.linear_in(x_i) + self.linear_hidden(h_ip))
-                    h_i = self.rnn_cell(x_i.transpose(0, 1), h_ip.transpose(0, 1))
-                    h_i = torch.transpose(h_i, 0, 1)
+            out = self.linear_hidden(h_ip)
+            out = self.decoder(out)
+            out = self.nonlinear(out)
+            output[0] = out.reshape(-1)
 
-            out_j = self.decoder(h_i)
-            output[j] = out_j.reshape(-1)
+            h_i = self.rnn_cell(x[0].transpose(0, 1))
+            h_i = torch.transpose(h_i, 0, 1)
+
+        # RNN iteration
+        for i in range(1, N):
+
+            x_i = x[i]
+            h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1])[1]
+
+            out = self.linear_hidden(h_ip)
+            out = self.decoder(out)
+            out = self.nonlinear(out)
+            output[i] = out.reshape(-1)
+
+            h_i = self.rnn_cell(x_i.transpose(0, 1), h_ip.transpose(0, 1))
+            h_i = torch.transpose(h_i, 0, 1)
 
         return output
 

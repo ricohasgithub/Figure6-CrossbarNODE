@@ -57,7 +57,7 @@ device_params = {"Vdd": 0.2,
 # plt.savefig('./output/ground_truth.png', dpi=600, transparent=True)
 
 # 40, 10, 20, 10, 2
-data_gen = Epoch_Spiral_Generator(150, 50, 20, 10, 2)
+data_gen = Epoch_Spiral_Generator(40, 20, 20, 5, 2)
 
 # Build and train models
 
