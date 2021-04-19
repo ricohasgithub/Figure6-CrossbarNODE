@@ -133,7 +133,7 @@ def train(model, data_gen, epochs):
     # Test
     seq = data_gen.test_start[0][0]
     t = data_gen.test_start[0][1]
-    num_predict = 30
+    num_predict = 5
     length = num_predict
 
     dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
