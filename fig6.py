@@ -22,6 +22,9 @@ from networks.ode import iter_train as iter_train
 from networks.ode_rnn import ODE_RNN as ODE_RNN
 from networks.ode_rnn import train as ode_rnn_train
 
+from networks.latent_ode import ODE_RNN as ODE_RNN_Test
+from networks.latent_ode import train as ode_rnn_test_train
+
 from networks.lstm_rnn import LSTM_RNN as LSTM_RNN
 from networks.lstm_rnn import train as lstm_train
 
@@ -54,11 +57,14 @@ device_params = {"Vdd": 0.2,
 # plt.savefig('./output/ground_truth.png', dpi=600, transparent=True)
 
 # 40, 10, 20, 10, 2
-data_gen = Epoch_Spiral_Generator(40, 10, 20, 10, 2)
+data_gen = Epoch_Spiral_Generator(150, 50, 20, 10, 2)
 
 # Build and train models
 
-epochs = 30
+epochs = 20
+
+# ode_rnn = ODE_RNN_Test(2, 6, 2, device_params)
+# losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, epochs)
 
 ode_rnn = ODE_RNN(2, 6, 2, device_params)
 losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)

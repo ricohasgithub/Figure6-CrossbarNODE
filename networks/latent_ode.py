@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -39,14 +38,13 @@ class ODE_RNN(nn.Module):
         # Initialize initial hidden state
         self.h_0 = torch.zeros(hidden_layer_size, 1)
         self.hidden_layer_size = hidden_layer_size
-        self.output_size = output_size
 
         # Model layers
         self.linear_in = Linear(input_size, hidden_layer_size, self.cb)
         self.linear_hidden = Linear(hidden_layer_size, hidden_layer_size, self.cb)
         self.decoder = Linear(hidden_layer_size, output_size, self.cb)
 
-        self.rnn_cell = nn.GRUCell(input_size, hidden_layer_size, bias=False)
+        #self.rnn_cell = nn.GRUCell(input_size, hidden_layer_size)
 
         self.ode_func = ODE_Func(hidden_layer_size, self.cb)
         self.nonlinear = nn.Tanh()
@@ -54,30 +52,18 @@ class ODE_RNN(nn.Module):
     def forward(self, t, x, method="dopri5", step_size=20):
         
         t = t.reshape(-1).float()
-        # Size is train_window
-        num_predict = t.shape[0]
-        # num_predict = 1
-
-        # Model current output hidden state dynamics
         h_i = torch.zeros(self.hidden_layer_size, 1)
         h_ip = torch.zeros(self.hidden_layer_size, 1)
-        output = torch.zeros(num_predict, self.output_size)
 
-        # Predict sequence of length num_predict from inputs x and t
-        for j in range(num_predict):
+        # RNN iteration
+        for i, x_i in enumerate(x):
+            if i > 0:
+                h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1])[1]
+                h_i = self.nonlinear(self.linear_in(x_i) + self.linear_hidden(h_ip))
+            #h_i = self.rnn_cell(x_i, h_ip)
 
-            # RNN iteration
-            for i, x_i in enumerate(x):
-                if i > 0:
-                    h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1])[1]
-                    # h_i = self.nonlinear(self.linear_in(x_i) + self.linear_hidden(h_ip))
-                    h_i = self.rnn_cell(x_i.transpose(0, 1), h_ip.transpose(0, 1))
-                    h_i = torch.transpose(h_i, 0, 1)
-
-            out_j = self.decoder(h_i)
-            output[j] = out_j.reshape(-1)
-
-        return output
+        out = self.decoder(h_i)
+        return out
 
     def use_cb(self, state):
         self.linear_in.use_cb(state)
@@ -104,11 +90,7 @@ def train(model, data_gen, epochs):
         for i, (example, label) in enumerate(examples):
             
             optimizer.zero_grad()
-            # Make example[1] more than just 1 point to have model output predict sequence
-            prediction = model(example[1], example[0]).transpose(0, 1)
-
-            # print("pred: ", prediction)
-            # print("label: ", label)
+            prediction = model(example[1], example[0])
 
             loss = loss_function(prediction, label)
             epoch_loss.append(loss)
@@ -130,30 +112,17 @@ def train(model, data_gen, epochs):
     output = []
     all_t = []
 
-    # model.use_cb(True)
-
-    for i in range(num_predict):
-        all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
-        t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
+    #model.use_cb(True)
     
-    times = torch.cat(all_t, axis=0)
-
     with torch.no_grad():
-        prediction = model(times, seq)
-        print("pred2: ", prediction.size())
-        output.append(prediction)
-    
-    output = torch.cat(output, axis=0)
-    
-    # with torch.no_grad():
-    #     for i in range(length):
-    #         prediction = model((t + dt), seq).reshape(1, -1, 1)
-    #         seq = torch.cat((seq[1:], prediction), axis=0)
-    #         all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
-    #         t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
-    #         output.append(prediction)
+        for i in range(length):
+            prediction = model((t + dt), seq).reshape(1, -1, 1)
+            seq = torch.cat((seq[1:], prediction), axis=0)
+            all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
+            t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
+            output.append(prediction)
 
-    # output, times = torch.cat(output, axis=0), torch.cat(all_t, axis=0)
+    output, times = torch.cat(output, axis=0), torch.cat(all_t, axis=0)
 
     ax = plt.axes(projection='3d')
 

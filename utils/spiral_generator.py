@@ -28,12 +28,8 @@ class Epoch_Spiral_Generator():
         self.true_x = torch.sin(self.true_z).float()
         self.true_y = torch.cos(self.true_z).float()
 
-        self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
-
-        # self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
-        # self.y = torch.cat((torch.cos(self.x), torch.sin(self.x)), axis=0)
-        # self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
-
+        self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+10].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
+        
         self.train_data = self.data[:cutoff]
         self.test_start = self.data[0]
 
