@@ -14,6 +14,7 @@ from torchdiffeq import odeint
 from crossbar.crossbar import crossbar
 
 from utils.spiral_generator import Epoch_Spiral_Generator
+from utils.spiral_generator import Stochastic_Spiral_Generator
 from utils.spiral_generator import Regular_Spiral_Generator
 
 from networks.ode import ODE_Func as ODE_Net
@@ -28,7 +29,7 @@ from networks.latent_ode import train as ode_rnn_test_train
 from networks.lstm_rnn import LSTM_RNN as LSTM_RNN
 from networks.lstm_rnn import train as lstm_train
 
-# Device parameters for convenience        
+# Device parameters for convenience     
 device_params = {"Vdd": 0.2,
                  "r_wl": 20,
                  "r_bl": 20,
@@ -57,17 +58,28 @@ device_params = {"Vdd": 0.2,
 # plt.savefig('./output/ground_truth.png', dpi=600, transparent=True)
 
 # 40, 10, 20, 10, 2
-data_gen = Epoch_Spiral_Generator(40, 20, 20, 5, 2)
+data_gen = Epoch_Spiral_Generator(40, 20, 20, 10, 2)
+data_gen_stoch = Stochastic_Spiral_Generator(40, 20, 20, 10, 2)
+
+ax = plt.axes(projection='3d')
+
+print("x: ", data_gen_stoch.y_x.size())
+print("y: ", data_gen_stoch.y_y.size())
+print("z: ", data_gen_stoch.x.size())
+
+ax.plot3D(data_gen_stoch.y_x.squeeze(), data_gen_stoch.y_y.squeeze(), data_gen_stoch.x.squeeze(), 'gray')
+# ax.scatter3D(data_gen_stoch.data[0][0].squeeze(), data_gen_stoch.data[1].squeeze(), data_gen_stoch.x.squeeze(), 'gray')
+
 
 # Build and train models
 
-epochs = 20
+epochs = 25
 
 # ode_rnn = ODE_RNN_Test(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, epochs)
 
-ode_rnn = ODE_RNN(2, 6, 2, device_params)
-losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
+# ode_rnn = ODE_RNN(2, 6, 2, device_params)
+# losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
 
 # lstm_rnn = LSTM_RNN(2, 6, 2, device_params)
 # output_lstm = lstm_train(lstm_rnn, data_gen, 100)
@@ -82,9 +94,9 @@ losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
 # plt.setup(output_lstm)
 
 # Plot loss history
-fig1, ax_loss = plt.subplots()
-fig1.suptitle('ODE-RNN Error')
+# fig1, ax_loss = plt.subplots()
+# fig1.suptitle('ODE-RNN Error')
 
-ax_loss.plot(list(range(epochs)), losses_ode_rnn, linewidth=1, marker = 's', color='c')
+# ax_loss.plot(list(range(epochs)), losses_ode_rnn, linewidth=1, marker = 's', color='c')
 
 plt.show()

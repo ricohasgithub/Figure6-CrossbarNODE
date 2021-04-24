@@ -131,26 +131,33 @@ def train(model, data_gen, epochs):
         print('Epoch {:04d} | Total Loss {:.6f}'.format(epoch, loss_history[epoch]))
 
     # Test
-    seq = data_gen.test_start[0][0]
-    t = data_gen.test_start[0][1]
-    num_predict = 5
+    # seq = data_gen.test_start[0][0]
+    seq = data_gen.test_data[0][0][0]
+    print("seq: ", seq.size())
+    print(seq)
+    #t = data_gen.test_start[0][1]
+    times = data_gen.test_data[0][0][1]
+    num_predict = 15
     length = num_predict
 
-    dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
+    # dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
     output = []
-    all_t = []
+    # all_t = []
 
     # model.use_cb(True)
 
-    for i in range(num_predict):
-        all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
-        t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
+    # for i in range(num_predict):
+    #     all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
+    #     t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
     
-    times = torch.cat(all_t, axis=0)
+    # times = torch.cat(all_t, axis=0)
+
+    # TODO: make seq same length as times (30)
 
     with torch.no_grad():
         prediction = model(times, seq)
         print("pred2: ", prediction.size())
+        print(prediction)
         output.append(prediction)
     
     output = torch.cat(output, axis=0)
