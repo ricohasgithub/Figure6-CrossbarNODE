@@ -26,4 +26,8 @@ class GRU_Cell(nn.Module):
         self.tanh = nn.Tanh()
         self.sigmoid = nn.Sigmoid()
 
+    def forward(self, x, h):
+
         
+
+        pass

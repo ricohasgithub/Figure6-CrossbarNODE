@@ -63,6 +63,7 @@ class ODE_RNN(nn.Module):
 
         # Initial layer (h0)
         if t[0] > 0:
+
             h_ip = odeint(self.ode_func, h_i, torch.tensor([0.0, t[0]]))[1]
 
             out = self.linear_hidden(h_ip)
@@ -70,7 +71,7 @@ class ODE_RNN(nn.Module):
             out = self.nonlinear(out)
             output[0] = out.reshape(-1)
 
-            h_i = self.rnn_cell(x[0].transpose(0, 1))
+            h_i = self.rnn_cell(x[0].transpose(0, 1), h_ip.transpose(0, 1))
             h_i = torch.transpose(h_i, 0, 1)
 
         # RNN iteration
