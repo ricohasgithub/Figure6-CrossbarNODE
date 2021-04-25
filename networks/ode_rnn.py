@@ -24,6 +24,10 @@ class ODE_Func(nn.Module):
         out = self.linear2(self.nonlinear(self.linear(x)))
         return out
 
+    def remap(self):
+        self.linear.remap()
+        self.linear2.remap()
+
     def use_cb(self, state):
         self.linear.use_cb(state)
 
@@ -89,6 +93,11 @@ class ODE_RNN(nn.Module):
             h_i = torch.transpose(h_i, 0, 1)
 
         return output
+
+    def remap(self):
+        self.linear_in.remap()
+        self.ode_func.remap()
+        self.linear_hidden.remap()
 
     def use_cb(self, state):
         self.linear_in.use_cb(state)
