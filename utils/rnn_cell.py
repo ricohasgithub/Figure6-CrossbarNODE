@@ -13,8 +13,8 @@ class GRU_Cell(nn.Module):
 
         self.cb = cb
 
-        self.i2h = Linear(input_layer_size, 3 * hidden_layer_size, cb)
-        self.h2h = Linear(hidden_layer_size, 3 * hidden_layer_size, cb)
+        self.i2h = Linear(input_layer_size, 3 * hidden_layer_size, self.cb)
+        self.h2h = Linear(hidden_layer_size, 3 * hidden_layer_size, self.cb)
 
         self.tanh = nn.Tanh()
         self.sigmoid = nn.Sigmoid()

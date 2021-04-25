@@ -78,7 +78,6 @@ class ODE_RNN(nn.Module):
 
             h_i = self.rnn_cell(x[0], h_ip)
             # h_i = self.rnn_cell(x[0].transpose(0, 1), h_ip.transpose(0, 1))
-            print("h_i: ", h_i.size())
             h_i = torch.transpose(h_i, 0, 1)
 
         # RNN iteration
@@ -95,7 +94,6 @@ class ODE_RNN(nn.Module):
             h_i = self.rnn_cell(x_i, h_ip)
             # h_i = self.rnn_cell(x_i.transpose(0, 1), h_ip.transpose(0, 1))
             h_i = torch.transpose(h_i, 0, 1)
-            print("h_i: ", h_i.size())
 
         return output
 
