@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from torchdiffeq import odeint
 
 from utils.linear import Linear
+from utils.rnn_cell import GRU_Cell
 from crossbar.crossbar import crossbar
 
 class ODE_Func(nn.Module):
@@ -50,7 +51,7 @@ class ODE_RNN(nn.Module):
         self.linear_hidden = Linear(hidden_layer_size, hidden_layer_size, self.cb)
         self.decoder = Linear(hidden_layer_size, output_size, self.cb)
 
-        self.rnn_cell = nn.GRUCell(input_size, hidden_layer_size, bias=False)
+        self.rnn_cell = GRU_Cell(input_size, hidden_layer_size, self.cb)
 
         self.ode_func = ODE_Func(hidden_layer_size, self.cb)
         self.nonlinear = nn.Tanh()
@@ -75,7 +76,9 @@ class ODE_RNN(nn.Module):
             out = self.nonlinear(out)
             output[0] = out.reshape(-1)
 
-            h_i = self.rnn_cell(x[0].transpose(0, 1), h_ip.transpose(0, 1))
+            h_i = self.rnn_cell(x[0], h_ip)
+            # h_i = self.rnn_cell(x[0].transpose(0, 1), h_ip.transpose(0, 1))
+            print("h_i: ", h_i.size())
             h_i = torch.transpose(h_i, 0, 1)
 
         # RNN iteration
@@ -89,8 +92,10 @@ class ODE_RNN(nn.Module):
             out = self.nonlinear(out)
             output[i] = out.reshape(-1)
 
-            h_i = self.rnn_cell(x_i.transpose(0, 1), h_ip.transpose(0, 1))
+            h_i = self.rnn_cell(x_i, h_ip)
+            # h_i = self.rnn_cell(x_i.transpose(0, 1), h_ip.transpose(0, 1))
             h_i = torch.transpose(h_i, 0, 1)
+            print("h_i: ", h_i.size())
 
         return output
 

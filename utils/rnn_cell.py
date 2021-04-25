@@ -24,14 +24,14 @@ class GRU_Cell(nn.Module):
         gate_x = self.i2h(x).squeeze()
         gate_h = self.h2h(h).squeeze()
 
-        i_r,i_u,i_n = gate_x.chunk(3, 1)
-        h_r,h_u,h_n = gate_h.chunk(3, 1)
+        i_r, i_u ,i_n = gate_x.chunk(3)
+        h_r, h_u, h_n = gate_h.chunk(3)
         
         gate_reset = torch.sigmoid(i_r + h_r)
         gate_update = torch.sigmoid(i_u + h_u)
-        gate_nstate = torch.tanh(i_n + (gate_reset*h_n))
+        gate_nstate = torch.tanh(i_n + (gate_reset * h_n))
 
-        return gate_update * h + (1 - gate_update) * gate_nstate
+        return gate_update * h.transpose(0, 1) + (1 - gate_update) * gate_nstate
 
     def remap(self):
         self.i2h.remap()
