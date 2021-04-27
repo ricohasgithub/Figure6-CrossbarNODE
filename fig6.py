@@ -62,26 +62,21 @@ device_params = {"Vdd": 0.2,
 
 # 40, 10, 20, 10, 2
 data_gen = Epoch_Spiral_Generator(40, 20, 20, 10, 2)
-#data_gen_stoch = Stochastic_Spiral_Generator(40, 20, 20, 10, 2)
 
 ax = plt.axes(projection='3d')
-
-# print("x: ", data_gen_stoch.y_x.size())
-# print("y: ", data_gen_stoch.y_y.size())
-# print("z: ", data_gen_stoch.x.size())
-
-# ax.plot3D(data_gen_stoch.y_x.squeeze(), data_gen_stoch.y_y.squeeze(), data_gen_stoch.x.squeeze(), 'gray')
-# ax.scatter3D(data_gen_stoch.data[0][0].squeeze(), data_gen_stoch.data[1].squeeze(), data_gen_stoch.x.squeeze(), 'gray')
 
 # Build and train models
 
 epochs = 30
 
+ode_rnn = GRU_RNN(2, 6, 2, device_params)
+losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
+
 # ode_rnn = ODE_RNN_Test(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, epochs)
 
-ode_rnn = ODE_RNN(2, 6, 2, device_params)
-losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
+# ode_rnn = ODE_RNN(2, 6, 2, device_params)
+# losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
 
 # lstm_rnn = LSTM_RNN(2, 6, 2, device_params)
 # output_lstm = lstm_train(lstm_rnn, data_gen, 100)

@@ -14,7 +14,7 @@ class GRU_RNN(nn.Module):
 
     def __init__(self, input_layer_size, hidden_layer_size, output_layer_size, device_params):
 
-        super(LSTM_RNN, self).__init__()
+        super(GRU_RNN, self).__init__()
 
         self.input_layer_size = input_layer_size
         self.hidden_layer_size = hidden_layer_size
@@ -58,6 +58,8 @@ class GRU_RNN(nn.Module):
 
 def train(model, data_gen, epochs):
 
+    #model.use_cb(True)
+
     examples = data_gen.train_data
 
     optimizer = optim.Adam(model.parameters(), lr=0.01)
@@ -71,9 +73,13 @@ def train(model, data_gen, epochs):
         epoch_loss = []
 
         for i, (example, label) in enumerate(examples):
-
+            
             optimizer.zero_grad()
-            prediction = model(example[0].reshape(-1, data_gen.train_window, 2)).reshape(2, 1)
+            # Make example[1] more than just 1 point to have model output predict sequence
+            prediction = model(example[1], example[0]).transpose(0, 1)
+
+            # print("pred: ", prediction)
+            # print("label: ", label)
 
             loss = loss_function(prediction, label)
             epoch_loss.append(loss)
@@ -86,33 +92,54 @@ def train(model, data_gen, epochs):
         print('Epoch {:04d} | Total Loss {:.6f}'.format(epoch, loss_history[epoch]))
 
     # Test
-    seq = data_gen.test_start[0][0]
-    t = data_gen.test_start[0][1]
-    num_predict = 30
+    # seq = data_gen.test_start[0][0]
+    seq = data_gen.test_data[0][0][0]
+    print("seq: ", seq.size())
+    print(seq)
+    #t = data_gen.test_start[0][1]
+    times = data_gen.test_data[0][0][1]
+    # num_predict currently not being used
+    num_predict = 50
     length = num_predict
 
-    dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
+    # dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
     output = []
-    all_t = []
+    # all_t = []
 
-    #model.use_cb(True)
+    # model.use_cb(True)
+
+    # for i in range(num_predict):
+    #     all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
+    #     t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
     
-    with torch.no_grad():
-        for i in range(length):
-            prediction = model(seq.reshape(-1, data_gen.train_window, 2)).reshape(2, 1).reshape(1, -1, 1)
-            seq = torch.cat((seq[1:], prediction), axis=0)
-            all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
-            t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
-            output.append(prediction)
+    # times = torch.cat(all_t, axis=0)
 
-    output, times = torch.cat(output, axis=0), torch.cat(all_t, axis=0)
+    # TODO: make seq same length as times (30)
+
+    with torch.no_grad():
+        prediction = model(times, seq)
+        print("pred2: ", prediction.size())
+        print(prediction)
+        output.append(prediction)
+    
+    output = torch.cat(output, axis=0)
+    
+    # with torch.no_grad():
+    #     for i in range(length):
+    #         prediction = model((t + dt), seq).reshape(1, -1, 1)
+    #         seq = torch.cat((seq[1:], prediction), axis=0)
+    #         all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
+    #         t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
+    #         output.append(prediction)
+
+    # output, times = torch.cat(output, axis=0), torch.cat(all_t, axis=0)
 
     ax = plt.axes(projection='3d')
 
     o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), times.squeeze()
     # o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), output[:, 2].squeeze()
-    ax.plot3D(o1, o2, o3, 'blue')
-    ax.scatter3D(o1, o2, o3, 'blue')
+    ax.plot3D(o1, o2, o3, 'red')
+    # ax.scatter3D(o1, o2, o3, 'red')
     
     d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
     # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.y[2, :].squeeze()
@@ -120,7 +147,6 @@ def train(model, data_gen, epochs):
     ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
     ax.scatter3D(d1, d2, d3, 'gray')
 
-    plt.savefig('./output/lstm_rnn.png', dpi=600, transparent=True)
+    plt.savefig('./output/gru_rnn.png', dpi=600, transparent=True)
 
-    return ax
-
+    return loss_history, ax
