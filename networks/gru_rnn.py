@@ -12,18 +12,18 @@ from crossbar.crossbar import crossbar
 
 class GRU_RNN(nn.Module):
 
-    def __init__(self, input_layer_size, hidden_layer_size, output_layer_size, device_params):
+    def __init__(self, input_size, hidden_layer_size, output_size, device_params):
 
         super(GRU_RNN, self).__init__()
 
-        self.input_layer_size = input_layer_size
+        self.input_size = input_size
         self.hidden_layer_size = hidden_layer_size
-        self.output_layer_size = output_layer_size
+        self.output_size = output_size
 
         self.cb = crossbar(device_params)
 
-        self.rnn_cell = GRU_Cell(input_layer_size, hidden_layer_size, self.cb)
-        self.linear = Linear(hidden_layer_size, output_layer_size, self.cb)
+        self.rnn_cell = GRU_Cell(input_size, hidden_layer_size, self.cb)
+        self.linear = Linear(hidden_layer_size, output_size, self.cb)
     
     def forward(self, t, x, method="dopri5", step_size=20):
 
@@ -38,18 +38,19 @@ class GRU_RNN(nn.Module):
         if t[0] > 0:
 
             h_i = self.rnn_cell(x[0], h_i)
-            # h_i = torch.transpose(h_i, 0, 1)
+            h_i = torch.transpose(h_i, 0, 1)
             out = self.linear(torch.relu(h_i))
             output[0] = out.reshape(-1)
 
         for i in range(1, N):
 
             h_i = self.rnn_cell(x[0], h_i)
+            h_i = torch.transpose(h_i, 0, 1)
             out = self.linear(torch.relu(h_i))
             
-            output[0] = out.reshape(-1)
+            output[i] = out.reshape(-1)
 
-        return out
+        return output
 
     def use_cb(self, state):
         self.linear_in.use_cb(state)
