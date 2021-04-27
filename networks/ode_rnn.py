@@ -150,7 +150,8 @@ def train(model, data_gen, epochs):
     print(seq)
     #t = data_gen.test_start[0][1]
     times = data_gen.test_data[0][0][1]
-    num_predict = 15
+    # num_predict currently not being used
+    num_predict = 50
     length = num_predict
 
     # dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
@@ -190,7 +191,7 @@ def train(model, data_gen, epochs):
     o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), times.squeeze()
     # o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), output[:, 2].squeeze()
     ax.plot3D(o1, o2, o3, 'red')
-    ax.scatter3D(o1, o2, o3, 'red')
+    # ax.scatter3D(o1, o2, o3, 'red')
     
     d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
     # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.y[2, :].squeeze()

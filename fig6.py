@@ -29,6 +29,9 @@ from networks.latent_ode import train as ode_rnn_test_train
 from networks.lstm_rnn import LSTM_RNN as LSTM_RNN
 from networks.lstm_rnn import train as lstm_train
 
+from networks.gru_rnn import GRU_RNN as GRU_RNN
+from networks.gru_rnn import train as gru_train
+
 # Device parameters for convenience     
 device_params = {"Vdd": 0.2,
                  "r_wl": 20,
@@ -70,10 +73,9 @@ ax = plt.axes(projection='3d')
 # ax.plot3D(data_gen_stoch.y_x.squeeze(), data_gen_stoch.y_y.squeeze(), data_gen_stoch.x.squeeze(), 'gray')
 # ax.scatter3D(data_gen_stoch.data[0][0].squeeze(), data_gen_stoch.data[1].squeeze(), data_gen_stoch.x.squeeze(), 'gray')
 
-
 # Build and train models
 
-epochs = 25
+epochs = 30
 
 # ode_rnn = ODE_RNN_Test(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, epochs)
@@ -96,7 +98,6 @@ losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
 # Plot loss history
 fig1, ax_loss = plt.subplots()
 fig1.suptitle('ODE-RNN Error')
-
-# ax_loss.plot(list(range(epochs)), losses_ode_rnn, linewidth=1, marker = 's', color='c')
+ax_loss.plot(list(range(epochs)), losses_ode_rnn, linewidth=1, marker = 's', color='c')
 
 plt.show()

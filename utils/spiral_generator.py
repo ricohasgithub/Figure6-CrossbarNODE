@@ -34,7 +34,7 @@ class Epoch_Spiral_Generator():
         
         self.train_data = self.data[:cutoff]
         self.test_start = self.data[0]
-        self.test_data = [((self.y[:, i:i+30].reshape(-1, dimension, 1), self.x[:, i:i+30].reshape(-1, 1, 1)), (self.y[:, i+30:i+31].reshape(dimension, -1))) for i in range(self.y.size(1) - 30)]
+        self.test_data = [((self.y[:, i:i+30].reshape(-1, dimension, 1), self.x[:, i:i+30].reshape(-1, 1, 1)), (self.y[:, i+30:i+31].reshape(dimension, -1))) for i in range(self.y.size(1) - 10)]
 
 class Stochastic_Spiral_Generator():
 
