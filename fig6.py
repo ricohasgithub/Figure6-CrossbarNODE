@@ -35,23 +35,24 @@ from networks.gru_rnn import train as gru_train
 # Function to map and plot crossbar map for a given model
 def plot_cmap(model):
 
+    # Retrieve crossbar weights size
+    weights = [model.cb.W[coord[0]:coord[0]+coord[2], coord[1]*2:coord[1]*2+coord[3]*2] for coord in model.cb.mapped] + [model.cb.W]
+    vmax = max(torch.max(weight) for weight in weights)
+    vmin = min(torch.min(weight) for weight in weights)
+
     # Plot crossbar mapping
-    fig, ax_cmap = plt.subplots(ncols=5, figsize=(20, 3))
+    fig, ax_cmap = plt.subplots(ncols=len(weights), figsize=(20, 3))
     cmap = sns.blend_palette(("#fa7de3", "#ffffff", "#6ef3ff"), n_colors=9, as_cmap=True, input='hex')
 
     for ax in ax_cmap:
         ax.set(xticklabels=[])
         ax.set(yticklabels=[])
-
-    weights = [model.cb.W[coord[0]:coord[0]+coord[2], coord[1]*2:coord[1]*2+coord[3]*2] for coord in model.cb.mapped] + [model.cb.W]
-    vmax = max(torch.max(weight) for weight in weights)
-    vmin = min(torch.min(weight) for weight in weights)
-
+        
     with torch.no_grad():
         for i, weight in enumerate(weights):
             sns.heatmap(weight, vmax=vmax, vmin=vmin, cmap=cmap, square=True, cbar=False, ax=ax_cmap[i])
 
-    plt.savefig()
+    fig.savefig("./output/ode_rnn_cmap.png", dpi=600, transparent=True)
 
     return fig, ax_cmap
 
@@ -91,16 +92,16 @@ ax = plt.axes(projection='3d')
 
 # Build and train models
 
-epochs = 30
+epochs = 20
 
-ode_rnn = GRU_RNN(2, 6, 2, device_params)
-losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
+# ode_rnn = GRU_RNN(2, 6, 2, device_params)
+# losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
 
 # ode_rnn = ODE_RNN_Test(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, epochs)
 
-# ode_rnn = ODE_RNN(2, 6, 2, device_params)
-# losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
+ode_rnn = ODE_RNN(2, 6, 2, device_params)
+losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
 
 # lstm_rnn = LSTM_RNN(2, 6, 2, device_params)
 # output_lstm = lstm_train(lstm_rnn, data_gen, 100)
@@ -118,5 +119,8 @@ losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
 fig1, ax_loss = plt.subplots()
 fig1.suptitle('ODE-RNN Error')
 ax_loss.plot(list(range(epochs)), losses_ode_rnn, linewidth=1, marker = 's', color='c')
+
+# Plot crossbar mapping
+plot_cmap(ode_rnn)
 
 plt.show()
