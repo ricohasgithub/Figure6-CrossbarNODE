@@ -32,12 +32,36 @@ from networks.lstm_rnn import train as lstm_train
 from networks.gru_rnn import GRU_RNN as GRU_RNN
 from networks.gru_rnn import train as gru_train
 
+# Function to map and plot crossbar map for a given model
+def plot_cmap(model):
+
+    # Plot crossbar mapping
+    fig, ax_cmap = plt.subplots(ncols=5, figsize=(20, 3))
+    cmap = sns.blend_palette(("#fa7de3", "#ffffff", "#6ef3ff"), n_colors=9, as_cmap=True, input='hex')
+
+    for ax in ax_cmap:
+        ax.set(xticklabels=[])
+        ax.set(yticklabels=[])
+
+    weights = [model.cb.W[coord[0]:coord[0]+coord[2], coord[1]*2:coord[1]*2+coord[3]*2] for coord in model.cb.mapped] + [model.cb.W]
+    vmax = max(torch.max(weight) for weight in weights)
+    vmin = min(torch.min(weight) for weight in weights)
+
+    with torch.no_grad():
+        for i, weight in enumerate(weights):
+            sns.heatmap(weight, vmax=vmax, vmin=vmin, cmap=cmap, square=True, cbar=False, ax=ax_cmap[i])
+
+    plt.savefig()
+
+    return fig, ax_cmap
+
+
 # Device parameters for convenience     
 device_params = {"Vdd": 0.2,
                  "r_wl": 20,
                  "r_bl": 20,
-                 "m": 512,
-                 "n": 512,
+                 "m": 128,
+                 "n": 128,
                  "r_on": 1e4,
                  "r_off": 1e5,
                  "dac_resolution": 4,

@@ -34,7 +34,7 @@ class Epoch_Spiral_Generator():
         
         self.train_data = self.data[:cutoff]
         self.test_start = self.data[0]
-        self.test_data = [((self.y[:, i:i+30].reshape(-1, dimension, 1), self.x[:, i:i+30].reshape(-1, 1, 1)), (self.y[:, i+30:i+31].reshape(dimension, -1))) for i in range(self.y.size(1) - 10)]
+        self.test_data = [((self.y[:, i:i+30].reshape(-1, dimension, 1), self.x[:, i:i+30].reshape(-1, 1, 1)), (self.y[:, i+30:i+31].reshape(dimension, -1))) for i in range(self.y.size(1) - 30)]
 
 class Stochastic_Spiral_Generator():
 
@@ -53,8 +53,10 @@ class Stochastic_Spiral_Generator():
         self.y_x = (torch.sin(self.x) + 0.2 * np.random.randn(n_pts)).float()
         self.y_y = (torch.cos(self.x) + 0.2 * np.random.randn(n_pts)).float()
 
-        self.y = torch.cat((self.y_x, self.y_y), axis=0)
-        
+        self.theta = torch.linspace(0, 1.0, n_pts).reshape(1, -1)
+
+        self.y = torch.mv(torch.cat((self.y_x, self.y_y), axis=0), self.theta)
+
         self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+10].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
 
 class Regular_Spiral_Generator():
