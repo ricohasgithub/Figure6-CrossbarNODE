@@ -83,11 +83,13 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
 
     ax = plt.axes(projection='3d')
     loss_avg = [0] * epochs
+    loss_history = []
 
     for i in range(iters):
 
         # Get current model output
         model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
+        loss_history.append(loss)
 
         for i in range(len(loss)):
             loss_avg[i] += loss[i]
@@ -95,7 +97,17 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
     for i in range(len(loss_avg)):
         loss_avg[i] = (loss_avg[i]/iters)
 
-    return plot_loss(epochs, loss_avg)
+    # Plot loss history and average loss
+    fig, ax_loss = plt.subplots()
+    fig.suptitle('Average ODE-RNN Error')
+
+    for i in range(iters):
+        ax_loss.plot(list(range(epochs)), loss_history[i], linewidth=1, color='c')        
+
+    ax_loss.plot(list(range(epochs)), loss_avg, linewidth=1, color='black')
+    fig.savefig('./output/training_avg.png', dpi=600, transparent=True)
+
+    return fig, ax_loss
 
 # Device parameters for convenience     
 device_params = {"Vdd": 0.2,
