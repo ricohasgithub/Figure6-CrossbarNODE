@@ -56,6 +56,31 @@ def plot_cmap(model):
 
     return fig, ax_cmap
 
+def plot_loss(epochs, loss):
+    # Plot loss history
+    fig, ax_loss = plt.subplots()
+    fig.suptitle('ODE-RNN Error')
+    ax_loss.plot(list(range(epochs)), loss, linewidth=1, color='c')
+    fig.savefig('./output/training.png', dpi=600, transparent=True)
+    return fig, ax_loss
+
+def build_model (epochs, device_params, method, time_steps):
+
+    # Get regular spiral data with irregularly sampled time intervals (+ noise)
+    data_gen = Epoch_Spiral_Generator(40, 20, 20, 10, 2)
+
+    ax = plt.axes(projection='3d')
+
+    # Build and train models
+    ode_rnn = ODE_RNN(2, 6, 2, device_params, method, time_steps)
+    losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
+
+    # Plot crossbar mapping and loss
+    fig_cmap, ax_cmap = plot_cmap(ode_rnn)
+    fig_loss, ax_loss = plot_loss(epochs, losses_ode_rnn)
+
+    return ode_rnn, output_ode_rnn, losses_ode_rnn
+
 
 # Device parameters for convenience     
 device_params = {"Vdd": 0.2,
@@ -80,47 +105,16 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-# Get regular spiral data with irregularly sampled time intervals (+ noise)
-# data_gen = Regular_Spiral_Generator(50, 50, 25, 10, 20)
-# ground_truth = data_gen.get_plot()
-# plt.savefig('./output/ground_truth.png', dpi=600, transparent=True)
-
-# 40, 10, 20, 10, 2
-data_gen = Epoch_Spiral_Generator(40, 20, 20, 10, 2)
-
-ax = plt.axes(projection='3d')
-
-# Build and train models
-
-epochs = 20
-
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
 
 # ode_rnn = ODE_RNN_Test(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, epochs)
 
-ode_rnn = ODE_RNN(2, 6, 2, device_params)
-losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
-
 # lstm_rnn = LSTM_RNN(2, 6, 2, device_params)
 # output_lstm = lstm_train(lstm_rnn, data_gen, 100)
 
 # ode_net = ODE_Net(3, 50, 3, crossbar(device_params))
 # iter_train(ode_net, data_gen2, 500)
-
-# Test models
-
-# Display all remaining plots
-# plt.setup(output_ode_rnn)
-# plt.setup(output_lstm)
-
-# Plot loss history
-fig1, ax_loss = plt.subplots()
-fig1.suptitle('ODE-RNN Error')
-ax_loss.plot(list(range(epochs)), losses_ode_rnn, linewidth=1, marker = 's', color='c')
-
-# Plot crossbar mapping
-plot_cmap(ode_rnn)
 
 plt.show()

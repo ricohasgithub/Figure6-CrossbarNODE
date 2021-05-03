@@ -34,7 +34,7 @@ class ODE_Func(nn.Module):
 
 class ODE_RNN(nn.Module):
 
-    def __init__(self, input_size, hidden_layer_size, output_size, device_params):
+    def __init__(self, input_size, hidden_layer_size, output_size, device_params, method, step_size):
         
         super(ODE_RNN, self).__init__()
 
@@ -45,6 +45,8 @@ class ODE_RNN(nn.Module):
         self.h_0 = torch.zeros(hidden_layer_size, 1)
         self.hidden_layer_size = hidden_layer_size
         self.output_size = output_size
+        self.method = method
+        self.step_size = step_size
 
         # Model layers
         self.linear_in = Linear(input_size, hidden_layer_size, self.cb)
@@ -56,7 +58,7 @@ class ODE_RNN(nn.Module):
         self.ode_func = ODE_Func(hidden_layer_size, self.cb)
         self.nonlinear = nn.Tanh()
 
-    def forward(self, t, x, method="dopri5", step_size=20):
+    def forward(self, t, x):
         
         t = t.reshape(-1).float()
         N = t.shape[0]
@@ -69,7 +71,7 @@ class ODE_RNN(nn.Module):
         # Initial layer (h0)
         if t[0] > 0:
 
-            h_ip = odeint(self.ode_func, h_i, torch.tensor([0.0, t[0]]))[1]
+            h_ip = odeint(self.ode_func, h_i, torch.tensor([0.0, t[0]]), method=self.method)[1]
 
             out = self.linear_hidden(h_ip)
             out = self.decoder(out)
@@ -84,7 +86,7 @@ class ODE_RNN(nn.Module):
         for i in range(1, N):
 
             x_i = x[i]
-            h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1])[1]
+            h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1], method=self.method)[1]
 
             out = self.linear_hidden(h_ip)
             out = self.decoder(out)
