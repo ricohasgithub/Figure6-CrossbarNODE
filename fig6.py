@@ -53,6 +53,7 @@ def plot_cmap(model):
             sns.heatmap(weight, vmax=vmax, vmin=vmin, cmap=cmap, square=True, cbar=False, ax=ax_cmap[i])
 
     fig.savefig("./output/ode_rnn_cmap.png", dpi=600, transparent=True)
+    plt.close()
 
     return fig, ax_cmap
 
@@ -62,6 +63,7 @@ def plot_loss(epochs, loss):
     fig.suptitle('ODE-RNN Error')
     ax_loss.plot(list(range(epochs)), loss, linewidth=1, color='c')
     fig.savefig('./output/training.png', dpi=600, transparent=True)
+    plt.close()
     return fig, ax_loss
 
 def build_model(epochs, data_gen, device_params, method, time_steps):
@@ -91,8 +93,10 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
         model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
         loss_history.append(loss)
 
-        for i in range(len(loss)):
-            loss_avg[i] += loss[i]
+        for j in range(len(loss)):
+            loss_avg[j] += loss[j]
+
+        print('Iter {:04d}'.format(i))
 
     for i in range(len(loss_avg)):
         loss_avg[i] = (loss_avg[i]/iters)
@@ -132,7 +136,7 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-get_average_performance(1, 30, device_params, "rk4", 1)
+get_average_performance(5, 30, device_params, "rk4", 1)
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
