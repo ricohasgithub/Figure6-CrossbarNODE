@@ -82,7 +82,7 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
     data_gen = Epoch_Spiral_Generator(40, 20, 20, 10, 2)
 
     ax = plt.axes(projection='3d')
-    loss_avg = []
+    loss_avg = [0] * epochs
 
     for i in range(iters):
 
