@@ -64,12 +64,7 @@ def plot_loss(epochs, loss):
     fig.savefig('./output/training.png', dpi=600, transparent=True)
     return fig, ax_loss
 
-def build_model (epochs, device_params, method, time_steps):
-
-    # Get regular spiral data with irregularly sampled time intervals (+ noise)
-    data_gen = Epoch_Spiral_Generator(40, 20, 20, 10, 2)
-
-    ax = plt.axes(projection='3d')
+def build_model(epochs, data_gen, device_params, method, time_steps):
 
     # Build and train models
     ode_rnn = ODE_RNN(2, 6, 2, device_params, method, time_steps)
@@ -81,6 +76,26 @@ def build_model (epochs, device_params, method, time_steps):
 
     return ode_rnn, output_ode_rnn, losses_ode_rnn
 
+def get_average_performance(iters, epochs, device_params, method, time_steps):
+
+    # Get regular spiral data with irregularly sampled time intervals (+ noise)
+    data_gen = Epoch_Spiral_Generator(40, 20, 20, 10, 2)
+
+    ax = plt.axes(projection='3d')
+    loss_avg = []
+
+    for i in range(iters):
+
+        # Get current model output
+        model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
+
+        for i in range(len(loss)):
+            loss_avg[i] += loss[i]
+
+    for i in range(len(loss_avg)):
+        loss_avg[i] = (loss_avg[i]/iters)
+
+    return plot_loss(epochs, loss_avg)
 
 # Device parameters for convenience     
 device_params = {"Vdd": 0.2,
@@ -104,6 +119,8 @@ device_params = {"Vdd": 0.2,
                  "method": "viability",
                  "viability": 0.05,
 }
+
+get_average_performance(1, 30, device_params, "rk4", 1)
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
