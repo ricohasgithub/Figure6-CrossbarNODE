@@ -81,7 +81,7 @@ def build_model(epochs, data_gen, device_params, method, time_steps):
 def get_average_performance(iters, epochs, device_params, method, time_steps):
 
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
-    data_gen = Epoch_Spiral_Generator(40, 20, 20, 10, 2)
+    data_gen = Epoch_Spiral_Generator(80, 20, 20, 25, 2, 50)
 
     ax = plt.axes(projection='3d')
     loss_avg = [0] * epochs
@@ -136,7 +136,7 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-get_average_performance(5, 30, device_params, "rk4", 1)
+get_average_performance(1, 50, device_params, "rk4", 1)
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)

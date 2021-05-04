@@ -9,7 +9,7 @@ from mpl_toolkits import mplot3d
 
 class Epoch_Spiral_Generator():
 
-    def __init__(self, n_pts, cutoff, depth, train_window, dimension):
+    def __init__(self, n_pts, cutoff, depth, train_window, dimension, seq_length):
 
         # Store instance variables
         self.n_pts = n_pts
@@ -21,8 +21,8 @@ class Epoch_Spiral_Generator():
         # Generate spiral
         self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
 
-        self.y_x = (torch.sin(self.x) + 0.05 * np.random.randn(n_pts)).float()
-        self.y_y = (torch.cos(self.x) + 0.05 * np.random.randn(n_pts)).float()
+        self.y_x = (torch.sin(self.x) + 0.075 * np.random.randn(n_pts)).float()
+        self.y_y = (torch.cos(self.x) + 0.075 * np.random.randn(n_pts)).float()
 
         self.y = torch.cat((self.y_x, self.y_y), axis=0)
         
@@ -30,11 +30,11 @@ class Epoch_Spiral_Generator():
         self.true_x = torch.sin(self.true_z).float()
         self.true_y = torch.cos(self.true_z).float()
 
-        self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+10].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
+        self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+train_window].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
         
         self.train_data = self.data[:cutoff]
         self.test_start = self.data[0]
-        self.test_data = [((self.y[:, i:i+30].reshape(-1, dimension, 1), self.x[:, i:i+30].reshape(-1, 1, 1)), (self.y[:, i+30:i+31].reshape(dimension, -1))) for i in range(self.y.size(1) - 30)]
+        self.test_data = [((self.y[:, i:i+seq_length].reshape(-1, dimension, 1), self.x[:, i:i+seq_length].reshape(-1, 1, 1)), (self.y[:, i+seq_length:(i+seq_length+1)].reshape(dimension, -1))) for i in range(self.y.size(1) - seq_length)]
 
 class Stochastic_Spiral_Generator():
 
