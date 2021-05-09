@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.functional as F
 
+import random
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -31,6 +32,11 @@ from networks.lstm_rnn import train as lstm_train
 
 from networks.gru_rnn import GRU_RNN as GRU_RNN
 from networks.gru_rnn import train as gru_train
+
+# Color graphing utility
+def random_color():
+    rgb = [random.uniform(0.0, 1.0), random.uniform(0.0, 1.0), random.uniform(0.0, 1.0)]
+    return tuple(rgb)
 
 # Function to map and plot crossbar map for a given model
 def plot_cmap(model):
@@ -87,13 +93,18 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
     loss_avg = [0] * epochs
     loss_history = []
 
+    colors = []
+
+    for i in range(iters):
+        colors.append(random_color())
+
     for i in range(iters):
 
         # Get current model output
         model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
         loss_history.append(loss)
 
-        ax.plot3D(output[0], output[1], output[2], 'red')
+        ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
 
         for j in range(len(loss)):
             loss_avg[j] += loss[j]
@@ -113,9 +124,9 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
     ax.scatter3D(d1, d2, d3, 'gray')
 
     for i in range(iters):
-        ax_loss.plot(list(range(epochs)), loss_history[i], linewidth=1, color='c')        
+        ax_loss.plot(list(range(epochs)), loss_history[i], color=colors[i], linewidth=1)        
 
-    ax_loss.plot(list(range(epochs)), loss_avg, linewidth=1, color='black')
+    ax_loss.plot(list(range(epochs)), loss_avg, color='black', linewidth=1)
     fig.savefig('./output/training_avg.png', dpi=600, transparent=True)
 
     return fig, ax_loss
