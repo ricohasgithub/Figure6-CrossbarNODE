@@ -116,7 +116,7 @@ def train(model, data_gen, epochs):
 
     examples = data_gen.train_data
 
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    optimizer = optim.Adam(model.parameters(), lr=0.015)
     loss_function = nn.MSELoss()
 
     loss_history = []
@@ -129,11 +129,7 @@ def train(model, data_gen, epochs):
         for i, (example, label) in enumerate(examples):
             
             optimizer.zero_grad()
-            # Make example[1] more than just 1 point to have model output predict sequence
             prediction = model(example[1], example[0]).transpose(0, 1)
-
-            # print("pred: ", prediction)
-            # print("label: ", label)
 
             loss = loss_function(prediction, label)
             epoch_loss.append(loss)
@@ -146,30 +142,17 @@ def train(model, data_gen, epochs):
         print('Epoch {:04d} | Total Loss {:.6f}'.format(epoch, loss_history[epoch]))
 
     # Test
-    # seq = data_gen.test_start[0][0]
     seq = data_gen.test_data[0][0][0]
     print("seq: ", seq.size())
     print(seq)
-    #t = data_gen.test_start[0][1]
     times = data_gen.test_data[0][0][1]
     # num_predict currently not being used
     num_predict = 50
     length = num_predict
 
-    # dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
     output = []
-    # all_t = []
-
-    # model.use_cb(True)
-
-    # for i in range(num_predict):
-    #     all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
-    #     t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
-    
-    # times = torch.cat(all_t, axis=0)
 
     # TODO: make seq same length as times (30)
-
     with torch.no_grad():
         prediction = model(times, seq)
         print("pred2: ", prediction.size())
@@ -177,30 +160,21 @@ def train(model, data_gen, epochs):
         output.append(prediction)
     
     output = torch.cat(output, axis=0)
-    
-    # with torch.no_grad():
-    #     for i in range(length):
-    #         prediction = model((t + dt), seq).reshape(1, -1, 1)
-    #         seq = torch.cat((seq[1:], prediction), axis=0)
-    #         all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
-    #         t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
-    #         output.append(prediction)
 
-    # output, times = torch.cat(output, axis=0), torch.cat(all_t, axis=0)
-
-    ax = plt.axes(projection='3d')
+    # ax = plt.axes(projection='3d')
 
     o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), times.squeeze()
     # o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), output[:, 2].squeeze()
-    ax.plot3D(o1, o2, o3, 'red')
+    # ax.plot3D(o1, o2, o3, 'red')
     # ax.scatter3D(o1, o2, o3, 'red')
     
-    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
-    # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.y[2, :].squeeze()
-    # ax.plot3D(d1, d2, d3, 'gray')
-    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
-    ax.scatter3D(d1, d2, d3, 'gray')
+    # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+    # # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.y[2, :].squeeze()
+    # # ax.plot3D(d1, d2, d3, 'gray')
+    # ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+    # ax.scatter3D(d1, d2, d3, 'gray')
 
-    plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
+    # plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
 
-    return loss_history, ax
+    # return loss_history, ax
+    return loss_history, [o1, o2, o3]

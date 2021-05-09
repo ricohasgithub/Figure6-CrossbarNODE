@@ -81,7 +81,7 @@ def build_model(epochs, data_gen, device_params, method, time_steps):
 def get_average_performance(iters, epochs, device_params, method, time_steps):
 
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
-    data_gen = Epoch_Spiral_Generator(80, 20, 20, 25, 2, 50)
+    data_gen = Epoch_Spiral_Generator(80, 20, 20, 25, 2, 70)
 
     ax = plt.axes(projection='3d')
     loss_avg = [0] * epochs
@@ -92,6 +92,8 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
         # Get current model output
         model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
         loss_history.append(loss)
+
+        ax.plot3D(output[0], output[1], output[2], 'red')
 
         for j in range(len(loss)):
             loss_avg[j] += loss[j]
@@ -104,6 +106,11 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
     # Plot loss history and average loss
     fig, ax_loss = plt.subplots()
     fig.suptitle('Average ODE-RNN Error')
+
+    # Plot true trajectory and observation points
+    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+    ax.scatter3D(d1, d2, d3, 'gray')
 
     for i in range(iters):
         ax_loss.plot(list(range(epochs)), loss_history[i], linewidth=1, color='c')        
@@ -136,7 +143,7 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-get_average_performance(1, 50, device_params, "rk4", 1)
+get_average_performance(3, 30, device_params, "midpoint", 1)
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
