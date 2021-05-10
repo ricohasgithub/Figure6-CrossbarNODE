@@ -114,14 +114,15 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
     for i in range(len(loss_avg)):
         loss_avg[i] = (loss_avg[i]/iters)
 
-    # Plot loss history and average loss
-    fig, ax_loss = plt.subplots()
-    fig.suptitle('Average ODE-RNN Error')
-
     # Plot true trajectory and observation points
     d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
     ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
     ax.scatter3D(d1, d2, d3, 'gray')
+    plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
+
+    # Plot loss history and average loss
+    fig, ax_loss = plt.subplots()
+    fig.suptitle('Average ODE-RNN Error')
 
     for i in range(iters):
         ax_loss.plot(list(range(epochs)), loss_history[i], color=colors[i], linewidth=1)        
@@ -154,7 +155,7 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-get_average_performance(3, 30, device_params, "midpoint", 1)
+get_average_performance(10, 30, device_params, "midpoint", 1)
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
