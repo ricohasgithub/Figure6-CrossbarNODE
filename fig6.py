@@ -15,6 +15,7 @@ from torchdiffeq import odeint
 from crossbar.crossbar import crossbar
 
 from utils.spiral_generator import Epoch_Spiral_Generator
+from utils.spiral_generator import Epoch_Test_Spiral_Generator
 from utils.spiral_generator import Stochastic_Spiral_Generator
 from utils.spiral_generator import Regular_Spiral_Generator
 
@@ -36,6 +37,7 @@ from networks.gru_rnn import train as gru_train
 # Color graphing utility
 def random_color():
     rgb = [random.uniform(0.0, 1.0), random.uniform(0.0, 1.0), random.uniform(0.0, 1.0)]
+    # rgb = [0.0, 0.0, 0.0]
     return tuple(rgb)
 
 # Function to map and plot crossbar map for a given model
@@ -87,7 +89,7 @@ def build_model(epochs, data_gen, device_params, method, time_steps):
 def get_average_performance(iters, epochs, device_params, method, time_steps):
 
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
-    data_gen = Epoch_Spiral_Generator(80, 20, 20, 25, 2, 70)
+    data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
 
     ax = plt.axes(projection='3d')
     loss_avg = [0] * epochs
@@ -155,13 +157,15 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-get_average_performance(10, 30, device_params, "midpoint", 1)
+get_average_performance(3, 50, device_params, "midpoint", 1)
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
 
+# data_gen = Epoch_Test_Spiral_Generator(40, 20, 20, 5, 2)
+
 # ode_rnn = ODE_RNN_Test(2, 6, 2, device_params)
-# losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, epochs)
+# losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, 30)
 
 # lstm_rnn = LSTM_RNN(2, 6, 2, device_params)
 # output_lstm = lstm_train(lstm_rnn, data_gen, 100)

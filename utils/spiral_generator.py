@@ -43,6 +43,28 @@ class Epoch_Spiral_Generator():
         # self.test_data = [((self.y[:, i:i+seq_length].reshape(-1, dimension, 1), self.x[:, i:i+seq_length].reshape(-1, 1, 1)), (self.y[:, i+seq_length:(i+seq_length+1)].reshape(dimension, -1))) for i in range(self.y.size(1) - seq_length)]
         self.test_data = [((self.true_data[:, i:i+seq_length].reshape(-1, dimension, 1), self.x[:, i:i+seq_length].reshape(-1, 1, 1)), (self.true_data[:, i+seq_length:(i+seq_length+1)].reshape(dimension, -1))) for i in range(self.true_data.size(1) - seq_length)]
 
+class Epoch_Test_Spiral_Generator():
+
+    def __init__(self, n_pts, cutoff, depth, train_window, dimension):
+
+        # Store instance variables
+        self.n_pts = n_pts
+        self.cutoff = cutoff
+        self.depth = depth
+        self.train_window = train_window
+        self.dimension = dimension
+
+        self.x = torch.linspace(0, 20, n_pts).reshape(1, -1)
+        self.y = torch.cat((torch.cos(self.x), torch.sin(self.x)), axis=0)
+        self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
+
+        self.train_data = self.data[:cutoff]
+        self.test_start = self.data[cutoff]
+        
+        self.true_z = torch.linspace(0, depth, n_pts).float()
+        self.true_x = torch.sin(self.true_z).float()
+        self.true_y = torch.cos(self.true_z).float()
+
 class Stochastic_Spiral_Generator():
 
     def __init__(self, n_pts, cutoff, depth, train_window, dimension):
