@@ -19,14 +19,14 @@ class Epoch_Spiral_Generator():
         self.dimension = dimension
 
         # Generate spiral
-        self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
+        self.x = torch.linspace(0, depth, n_pts).reshape(1, -1) + 1
 
         self.y_x = (torch.sin(self.x) + 0.05 * np.random.randn(n_pts)).float()
         self.y_y = (torch.cos(self.x) + 0.05 * np.random.randn(n_pts)).float()
 
         self.y = torch.cat((self.y_x, self.y_y), axis=0)
         
-        self.true_z = torch.linspace(0, depth, n_pts).float()
+        self.true_z = torch.linspace(0, depth, n_pts).float() + 1
         self.true_x = torch.sin(self.true_z).float()
         self.true_y = torch.cos(self.true_z).float()
         self.true_data = torch.cat((self.true_x, self.true_y), axis=0)
@@ -34,7 +34,7 @@ class Epoch_Spiral_Generator():
         self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+train_window].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
         
         self.train_data = self.data[:cutoff]
-        self.test_start = self.data[0]
+        self.test_start = self.data[cutoff]
 
         self.test_x = (torch.cos(self.x) + 0.05 * np.random.randn(n_pts)).float()
         self.test_y = (torch.cos(self.x) + 0.05 * np.random.randn(n_pts)).float()
@@ -42,6 +42,7 @@ class Epoch_Spiral_Generator():
 
         # self.test_data = [((self.y[:, i:i+seq_length].reshape(-1, dimension, 1), self.x[:, i:i+seq_length].reshape(-1, 1, 1)), (self.y[:, i+seq_length:(i+seq_length+1)].reshape(dimension, -1))) for i in range(self.y.size(1) - seq_length)]
         self.test_data = [((self.true_data[:, i:i+seq_length].reshape(-1, dimension, 1), self.x[:, i:i+seq_length].reshape(-1, 1, 1)), (self.true_data[:, i+seq_length:(i+seq_length+1)].reshape(dimension, -1))) for i in range(self.true_data.size(1) - seq_length)]
+        # self.test_data = [(self.true_data[:, 0:80].reshape(-1, dimension, 1), self.x[:, 0:80].reshape(-1, 1, 1))]
 
 class Epoch_Test_Spiral_Generator():
 
@@ -54,17 +55,26 @@ class Epoch_Test_Spiral_Generator():
         self.train_window = train_window
         self.dimension = dimension
 
-        self.x = torch.linspace(0, 20, n_pts).reshape(1, -1)
-        self.y = torch.cat((torch.cos(self.x), torch.sin(self.x)), axis=0)
-        self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
+        self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
 
-        self.train_data = self.data[:cutoff]
-        self.test_start = self.data[cutoff]
+        self.y_x = (torch.cos(self.x)) #+ 0.05 * np.random.randn(n_pts)).float()
+        self.y_y = (torch.sin(self.x)) #+ 0.05 * np.random.randn(n_pts)).float()
+
+        self.y = torch.cat((self.y_x, self.y_y), axis=0)
         
         self.true_z = torch.linspace(0, depth, n_pts).float()
-        self.true_x = torch.sin(self.true_z).float()
-        self.true_y = torch.cos(self.true_z).float()
+        self.true_x = torch.cos(self.true_z).float()
+        self.true_y = torch.sin(self.true_z).float()
 
+        self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
+
+        # self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
+        # self.y = torch.cat((torch.cos(self.x), torch.sin(self.x)), axis=0)
+        # self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
+
+        self.train_data = self.data[:cutoff]
+        self.test_start = self.data[cutoff:]
+        
 class Stochastic_Spiral_Generator():
 
     def __init__(self, n_pts, cutoff, depth, train_window, dimension):

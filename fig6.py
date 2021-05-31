@@ -25,6 +25,9 @@ from networks.ode import iter_train as iter_train
 from networks.ode_rnn import ODE_RNN as ODE_RNN
 from networks.ode_rnn import train as ode_rnn_train
 
+from networks.ode_rnn_autogen import ODE_RNN as ODE_RNN_autogen
+from networks.ode_rnn_autogen import train as ode_rnn_autogen_train
+
 from networks.latent_ode import ODE_RNN as ODE_RNN_Test
 from networks.latent_ode import train as ode_rnn_test_train
 
@@ -138,8 +141,8 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
 device_params = {"Vdd": 0.2,
                  "r_wl": 20,
                  "r_bl": 20,
-                 "m": 128,
-                 "n": 128,
+                 "m": 512,
+                 "n": 512,
                  "r_on": 1e4,
                  "r_off": 1e5,
                  "dac_resolution": 4,
@@ -157,12 +160,16 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-get_average_performance(3, 50, device_params, "midpoint", 1)
+# get_average_performance(1, 30, device_params, "midpoint", 1)
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
 
-# data_gen = Epoch_Test_Spiral_Generator(40, 20, 20, 5, 2)
+data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+# data_gen = Epoch_Test_Spiral_Generator(80, 20, 40, 20, 2)
+
+ode_rnn_autogen = ODE_RNN_autogen(2, 6, 2, device_params)
+losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn_autogen, data_gen, 30)
 
 # ode_rnn = ODE_RNN_Test(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, 30)
