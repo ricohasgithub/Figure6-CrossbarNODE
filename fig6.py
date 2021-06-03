@@ -183,7 +183,7 @@ def graph_ode_solver_difference(iters, epochs, device_params):
     for i in range(len(fixed_step_methods)):
         print("NOW USING: ", fixed_step_methods[i])
         loss_avg = get_average_performance(iters, epochs, device_params, fixed_step_methods[i], 1)
-        ax.plot(list(range(epochs)), loss_avg, colors[i], linewidth=1)
+        ax.plot(list(range(epochs)), loss_avg, colors[i], linewidth=1.5)
         all_loss.append(Line2D([0], [0], color=colors[i], lw=4))
 
     fig.savefig('./output/ode_solver_difference.png', dpi=600, transparent=True)
@@ -196,8 +196,8 @@ def graph_ode_solver_difference(iters, epochs, device_params):
 device_params = {"Vdd": 0.2,
                  "r_wl": 20,
                  "r_bl": 20,
-                 "m": 512,
-                 "n": 512,
+                 "m": 64,
+                 "n": 64,
                  "r_on": 1e4,
                  "r_off": 1e5,
                  "dac_resolution": 4,
@@ -215,8 +215,14 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-# graph_average_performance(3, 30, device_params, "midpoint", 1)
-graph_ode_solver_difference(1, 30, device_params)
+# graph_average_performance(1, 30, device_params, "euler", 1)
+# graph_ode_solver_difference(10, 30, device_params)
+
+data_gen = Epoch_Test_Spiral_Generator(80, 20, 40, 20, 2)
+
+ax = plt.axes(projection='3d')
+ax.plot3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'gray')
+ax.scatter3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'blue')
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)

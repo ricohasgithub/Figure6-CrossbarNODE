@@ -121,7 +121,7 @@ def train(model, data_gen, epochs):
     output = []
     all_t = []
 
-    #model.use_cb(True)
+    # model.use_cb(True)
     
     with torch.no_grad():
         for i, (example, label) in enumerate(seq):
