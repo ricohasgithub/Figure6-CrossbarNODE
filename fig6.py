@@ -80,8 +80,10 @@ def plot_loss(epochs, loss):
 def build_model(epochs, data_gen, device_params, method, time_steps):
 
     # Build and train models
-    ode_rnn = ODE_RNN(2, 6, 2, device_params, method, time_steps)
-    losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
+    # ode_rnn = ODE_RNN(2, 6, 2, device_params, method, time_steps)
+    # losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
+    ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
+    losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
 
     # Plot crossbar mapping and loss
     fig_cmap, ax_cmap = plot_cmap(ode_rnn)
@@ -92,7 +94,8 @@ def build_model(epochs, data_gen, device_params, method, time_steps):
 def get_average_performance(iters, epochs, device_params, method, time_steps):
 
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
-    data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
+    # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
+    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
 
     ax = plt.axes(projection='3d')
     loss_avg = [0] * epochs
@@ -160,16 +163,16 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-# get_average_performance(1, 30, device_params, "midpoint", 1)
+get_average_performance(3, 30, device_params, "midpoint", 1)
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
 
-data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+# data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
 # data_gen = Epoch_Test_Spiral_Generator(80, 20, 40, 20, 2)
 
-ode_rnn_autogen = ODE_RNN_autogen(2, 6, 2, device_params)
-losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn_autogen, data_gen, 30)
+# ode_rnn_autogen = ODE_RNN_autogen(2, 6, 2, device_params)
+# losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn_autogen, data_gen, 30)
 
 # ode_rnn = ODE_RNN_Test(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = ode_rnn_test_train(ode_rnn, data_gen, 30)

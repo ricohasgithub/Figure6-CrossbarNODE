@@ -34,7 +34,7 @@ class ODE_Func(nn.Module):
 
 class ODE_RNN(nn.Module):
 
-    def __init__(self, input_size, hidden_layer_size, output_size, device_params):
+    def __init__(self, input_size, hidden_layer_size, output_size, device_params, method, step_size):
         
         super(ODE_RNN, self).__init__()
 
@@ -50,13 +50,15 @@ class ODE_RNN(nn.Module):
         self.linear_hidden = Linear(hidden_layer_size, hidden_layer_size, self.cb)
         self.linear_hidden2 = Linear(hidden_layer_size, hidden_layer_size, self.cb)
         self.decoder = Linear(hidden_layer_size, output_size, self.cb)
+        self.method = method
+        self.step_size = step_size
 
         #self.rnn_cell = nn.GRUCell(input_size, hidden_layer_size)
 
         self.ode_func = ODE_Func(hidden_layer_size, self.cb)
         self.nonlinear = nn.Tanh()
 
-    def forward(self, t, x, method="midpoint", step_size=20):
+    def forward(self, t, x):
         
         t = t.reshape(-1).float()
         h_i = torch.zeros(self.hidden_layer_size, 1)
@@ -65,7 +67,7 @@ class ODE_RNN(nn.Module):
         # RNN iteration
         for i, x_i in enumerate(x):
             if i > 0:
-                h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1], method="midpoint")[1]
+                h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1], method=self.method)[1]
                 h_i = self.nonlinear(self.linear_hidden2(self.nonlinear(self.linear_in(x_i) + self.linear_hidden(h_ip))))
             #h_i = self.rnn_cell(x_i, h_ip)
 
@@ -139,19 +141,20 @@ def train(model, data_gen, epochs):
     print(output.size())
     print(times.size())
 
-    ax = plt.axes(projection='3d')
+    # ax = plt.axes(projection='3d')
 
     o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), times.squeeze()
     # o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), output[:, 2].squeeze()
-    ax.plot3D(o1, o2, o3, 'red')
-    ax.scatter3D(o1, o2, o3, 'red')
+    # ax.plot3D(o1, o2, o3, 'red')
+    # ax.scatter3D(o1, o2, o3, 'red')
     
-    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
-    # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.y[2, :].squeeze()
-    # ax.plot3D(d1, d2, d3, 'gray')
-    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
-    ax.scatter3D(d1, d2, d3, 'gray')
+    # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+    # # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.y[2, :].squeeze()
+    # # ax.plot3D(d1, d2, d3, 'gray')
+    # ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+    # ax.scatter3D(d1, d2, d3, 'gray')
 
-    plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
+    # plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
 
-    return loss_history, ax
+    # return loss_history, ax
+    return loss_history, [o1, o2, o3]
