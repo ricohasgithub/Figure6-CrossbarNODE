@@ -10,6 +10,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from mpl_toolkits import mplot3d
+from matplotlib.lines import Line2D
 
 from torchdiffeq import odeint
 from crossbar.crossbar import crossbar
@@ -97,6 +98,31 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
     # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
     data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
 
+    loss_avg = [0] * epochs
+    loss_history = []
+
+    for i in range(iters):
+
+        # Get current model output
+        model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
+        loss_history.append(loss)
+
+        for j in range(len(loss)):
+            loss_avg[j] += loss[j]
+
+        print('Iter {:04d}'.format(i))
+
+    for i in range(len(loss_avg)):
+        loss_avg[i] = (loss_avg[i]/iters)
+
+    return loss_avg
+
+def graph_average_performance(iters, epochs, device_params, method, time_steps):
+
+    # Get regular spiral data with irregularly sampled time intervals (+ noise)
+    # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
+    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+
     ax = plt.axes(projection='3d')
     loss_avg = [0] * epochs
     loss_history = []
@@ -138,17 +164,33 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
     ax_loss.plot(list(range(epochs)), loss_avg, color='black', linewidth=1)
     fig.savefig('./output/training_avg.png', dpi=600, transparent=True)
 
-    return fig, ax_loss
+    return fig, ax_loss, loss_avg
 
-def graph_method_difference(iters, epochs, device_params):
+def graph_ode_solver_difference(iters, epochs, device_params):
 
     # List of ODE Solver Functions
     fixed_step_methods = ["euler", "midpoint", "rk4", "explicit_adams", "implicit_adams"]
     adaptive_step_methods = ["dopri8", "dopri5", "bosh3", "fehlberg2", "adaptive_heun"]
 
-    for fixed_step_method in fixed_step_methods:
-        get_average_performance(iters, epochs, device_params, fixed_step_method, 1)
+    colors = []
 
+    for i in range(len(fixed_step_methods)):
+        colors.append(random_color())
+
+    fig, ax = plt.subplots()
+    all_loss = []
+
+    for i in range(len(fixed_step_methods)):
+        print("NOW USING: ", fixed_step_methods[i])
+        loss_avg = get_average_performance(iters, epochs, device_params, fixed_step_methods[i], 1)
+        ax.plot(list(range(epochs)), loss_avg, colors[i], linewidth=1)
+        all_loss.append(Line2D([0], [0], color=colors[i], lw=4))
+
+    fig.savefig('./output/ode_solver_difference.png', dpi=600, transparent=True)
+
+    ax.legend(all_loss, fixed_step_methods)
+
+    return fig, ax
 
 # Device parameters for convenience
 device_params = {"Vdd": 0.2,
@@ -173,7 +215,8 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-get_average_performance(3, 30, device_params, "midpoint", 1)
+# graph_average_performance(3, 30, device_params, "midpoint", 1)
+graph_ode_solver_difference(1, 30, device_params)
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
