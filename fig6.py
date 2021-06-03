@@ -140,7 +140,17 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
 
     return fig, ax_loss
 
-# Device parameters for convenience     
+def graph_method_difference(iters, epochs, device_params):
+
+    # List of ODE Solver Functions
+    fixed_step_methods = ["euler", "midpoint", "rk4", "explicit_adams", "implicit_adams"]
+    adaptive_step_methods = ["dopri8", "dopri5", "bosh3", "fehlberg2", "adaptive_heun"]
+
+    for fixed_step_method in fixed_step_methods:
+        get_average_performance(iters, epochs, device_params, fixed_step_method, 1)
+
+
+# Device parameters for convenience
 device_params = {"Vdd": 0.2,
                  "r_wl": 20,
                  "r_bl": 20,

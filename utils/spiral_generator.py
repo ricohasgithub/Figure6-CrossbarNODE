@@ -57,8 +57,8 @@ class Epoch_Test_Spiral_Generator():
 
         self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
 
-        self.y_x = (torch.cos(self.x)) #+ 0.05 * np.random.randn(n_pts)).float()
-        self.y_y = (torch.sin(self.x)) #+ 0.05 * np.random.randn(n_pts)).float()
+        self.y_x = (torch.cos(self.x) + 0.05 * np.random.randn(n_pts)).float()
+        self.y_y = (torch.sin(self.x) + 0.05 * np.random.randn(n_pts)).float()
 
         self.y = torch.cat((self.y_x, self.y_y), axis=0)
         
