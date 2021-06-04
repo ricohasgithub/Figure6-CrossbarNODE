@@ -19,6 +19,7 @@ from utils.spiral_generator import Epoch_Spiral_Generator
 from utils.spiral_generator import Epoch_Test_Spiral_Generator
 from utils.spiral_generator import Stochastic_Spiral_Generator
 from utils.spiral_generator import Regular_Spiral_Generator
+from utils.spiral_generator import Epoch_AM_Wave_Generator
 
 from networks.ode import ODE_Func as ODE_Net
 from networks.ode import iter_train as iter_train
@@ -122,6 +123,7 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
     # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
     data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+    # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
 
     ax = plt.axes(projection='3d')
     loss_avg = [0] * epochs
@@ -139,6 +141,7 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
         loss_history.append(loss)
 
         ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
+        ax.scatter3D(output[0], output[1], output[2], color='c')
 
         for j in range(len(loss)):
             loss_avg[j] += loss[j]
@@ -215,14 +218,14 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-# graph_average_performance(1, 30, device_params, "euler", 1)
+graph_average_performance(1, 100, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)
 
-data_gen = Epoch_Test_Spiral_Generator(80, 20, 40, 20, 2)
+# data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
 
-ax = plt.axes(projection='3d')
-ax.plot3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'gray')
-ax.scatter3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'blue')
+# ax = plt.axes(projection='3d')
+# ax.plot3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'gray')
+# ax.scatter3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'blue')
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
