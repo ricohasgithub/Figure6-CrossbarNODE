@@ -89,19 +89,19 @@ class Epoch_AM_Wave_Generator():
         self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
         self.x_2 = torch.linspace(0, 2*depth, n_pts).reshape(1, -1)
 
-        self.y_x = (torch.cos(self.x_2)).float()
+        self.y_x = (torch.cos(self.x)).float()
         self.y_y = (torch.sin(self.x) + torch.sin(self.x_2)).float()
         self.y = torch.cat((self.y_x, self.y_y), axis=0)
 
         self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
 
         self.train_data = self.data[:cutoff]
-        self.test_start = self.data[0:]
+        self.test_start = self.data[cutoff:]
 
         self.true_z = torch.linspace(0, depth, n_pts).squeeze().float()
         self.true_z_2 = torch.linspace(0, 2*depth, n_pts).squeeze().float()
 
-        self.true_x = (torch.cos(self.true_z_2)).squeeze().float()
+        self.true_x = (torch.cos(self.true_z)).squeeze().float()
         self.true_y = (torch.sin(self.x) + torch.sin(self.true_z_2)).squeeze().float()
 
 class Epoch_Heart_Generator():

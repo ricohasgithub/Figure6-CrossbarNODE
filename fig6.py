@@ -20,6 +20,7 @@ from utils.spiral_generator import Epoch_Test_Spiral_Generator
 from utils.spiral_generator import Stochastic_Spiral_Generator
 from utils.spiral_generator import Regular_Spiral_Generator
 from utils.spiral_generator import Epoch_AM_Wave_Generator
+from utils.spiral_generator import Epoch_Heart_Generator
 
 from networks.ode import ODE_Func as ODE_Net
 from networks.ode import iter_train as iter_train
@@ -97,7 +98,7 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
 
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
     # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
-    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+    # data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
 
     loss_avg = [0] * epochs
     loss_history = []
@@ -122,8 +123,9 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
 
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
     # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
-    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
-    # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
+    # data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+    # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
+    data_gen = Epoch_Heart_Generator(80, 20, 40, 10, 2)
 
     ax = plt.axes(projection='3d')
     loss_avg = [0] * epochs
@@ -141,7 +143,7 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
         loss_history.append(loss)
 
         ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
-        ax.scatter3D(output[0], output[1], output[2], color='c')
+        # ax.scatter3D(output[0], output[1], output[2], color='c')
 
         for j in range(len(loss)):
             loss_avg[j] += loss[j]
