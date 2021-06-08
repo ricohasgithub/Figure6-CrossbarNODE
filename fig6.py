@@ -98,7 +98,7 @@ def get_average_performance(iters, epochs, device_params, method, time_steps):
 
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
     # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
-    # data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
 
     loss_avg = [0] * epochs
     loss_history = []
@@ -123,9 +123,9 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
 
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
     # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
-    # data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
     # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
-    data_gen = Epoch_Heart_Generator(80, 20, 40, 10, 2)
+    # data_gen = Epoch_Heart_Generator(160, 20, 40, 10, 2)
 
     ax = plt.axes(projection='3d')
     loss_avg = [0] * epochs
@@ -177,25 +177,33 @@ def graph_ode_solver_difference(iters, epochs, device_params):
     fixed_step_methods = ["euler", "midpoint", "rk4", "explicit_adams", "implicit_adams"]
     adaptive_step_methods = ["dopri8", "dopri5", "bosh3", "fehlberg2", "adaptive_heun"]
 
-    colors = []
+    colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet"]
 
-    for i in range(len(fixed_step_methods)):
-        colors.append(random_color())
+    ax = plt.axes(projection='3d')
 
-    fig, ax = plt.subplots()
+    loss_fig, loss_ax = plt.subplots()
     all_loss = []
 
+    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+
     for i in range(len(fixed_step_methods)):
+
         print("NOW USING: ", fixed_step_methods[i])
-        loss_avg = get_average_performance(iters, epochs, device_params, fixed_step_methods[i], 1)
-        ax.plot(list(range(epochs)), loss_avg, colors[i], linewidth=1.5)
+
+        model, output, loss = build_model(epochs, data_gen, device_params, fixed_step_methods[i], 1)
+        ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
+        loss_ax.plot(list(range(epochs)), loss, colors[i], linewidth=1.5)
+
+        # loss_avg = get_average_performance(iters, epochs, device_params, fixed_step_methods[i], 1)
+        # ax.plot(list(range(epochs)), loss_avg, colors[i], linewidth=1.5)
+
         all_loss.append(Line2D([0], [0], color=colors[i], lw=4))
 
-    fig.savefig('./output/ode_solver_difference.png', dpi=600, transparent=True)
-
+    loss_fig.savefig('./output/ode_solver_difference.png', dpi=600, transparent=True)
+    loss_ax.legend(all_loss, fixed_step_methods)
     ax.legend(all_loss, fixed_step_methods)
 
-    return fig, ax
+    return ax, loss_fig, loss_ax
 
 # Device parameters for convenience
 device_params = {"Vdd": 0.2,
@@ -220,8 +228,8 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-graph_average_performance(1, 100, device_params, "euler", 1)
-# graph_ode_solver_difference(10, 30, device_params)
+# graph_average_performance(3, 30, device_params, "euler", 1)
+graph_ode_solver_difference(10, 30, device_params)
 
 # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
 
