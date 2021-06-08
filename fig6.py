@@ -81,15 +81,16 @@ def plot_loss(epochs, loss):
     plt.close()
     return fig, ax_loss
 
-def animate_model_output(fig, ax, data_gen, output):
+def animate_model_output(fig, ax, data_gen, color, output):
 
     camera = Camera(fig)
+
+    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+    ax.scatter3D(d1, d2, d3, 'gray')
     
     for j in range(output[2].size()[0]):
-        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
-        ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
-        ax.scatter3D(d1, d2, d3, 'gray')
-        ax.plot3D(output[0][:j], output[1][:j], output[2][:j], color=colors[i], linewidth=1.5)
+        ax.plot3D(output[0][:j], output[1][:j], output[2][:j], color=color, linewidth=1.5)
         camera.snap()
         plt.pause(0.02)
 
@@ -165,6 +166,12 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
         model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
         loss_history.append(loss)
 
+        animate_model_output(fig, ax, data_gen, colors[i], output)
+
+        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+        ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        ax.scatter3D(d1, d2, d3, 'gray')
+
         ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
         # ax.scatter3D(output[0], output[1], output[2], color='c')
 
@@ -172,8 +179,6 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
             loss_avg[j] += loss[j]
 
         print('Iter {:04d}'.format(i))
-
-        animate_model_output(fig, ax, data_gen, output)
 
     for i in range(len(loss_avg)):
         loss_avg[i] = (loss_avg[i]/iters)
@@ -256,7 +261,7 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-graph_average_performance(1, 30, device_params, "euler", 1)
+graph_average_performance(1, 100, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)
 
 # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
