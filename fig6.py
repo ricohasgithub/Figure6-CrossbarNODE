@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 from mpl_toolkits import mplot3d
 from matplotlib.lines import Line2D
+from celluloid import Camera
 
 from torchdiffeq import odeint
 from crossbar.crossbar import crossbar
@@ -127,7 +128,14 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
     # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
     # data_gen = Epoch_Heart_Generator(160, 20, 40, 10, 2)
 
+    fig = plt.figure()
     ax = plt.axes(projection='3d')
+
+    # Plot true trajectory and observation points
+    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+    ax.scatter3D(d1, d2, d3, 'gray')
+
     loss_avg = [0] * epochs
     loss_history = []
 
@@ -142,7 +150,16 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
         model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
         loss_history.append(loss)
 
-        ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
+        camera = Camera(fig)
+        for j in range(output[2].size()[0]):
+            ax.plot3D(output[0][:j], output[1][:j], output[2][:j], color=colors[i], linewidth=1.5)
+            camera.snap()
+            plt.pause(0.02)
+
+        animation = camera.animate()
+        animation.save('output/animation.gif', writer='PillowWriter', fps=5)
+
+        # ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
         # ax.scatter3D(output[0], output[1], output[2], color='c')
 
         for j in range(len(loss)):
@@ -153,10 +170,6 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
     for i in range(len(loss_avg)):
         loss_avg[i] = (loss_avg[i]/iters)
 
-    # Plot true trajectory and observation points
-    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
-    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
-    ax.scatter3D(d1, d2, d3, 'gray')
     plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
 
     # Plot loss history and average loss
@@ -235,8 +248,8 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-# graph_average_performance(3, 30, device_params, "euler", 1)
-graph_ode_solver_difference(10, 30, device_params)
+graph_average_performance(1, 30, device_params, "euler", 1)
+# graph_ode_solver_difference(10, 30, device_params)
 
 # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
 
