@@ -203,6 +203,13 @@ def graph_ode_solver_difference(iters, epochs, device_params):
     loss_ax.legend(all_loss, fixed_step_methods)
     ax.legend(all_loss, fixed_step_methods)
 
+    # Plot true trajectory and observation points
+    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+    ax.scatter3D(d1, d2, d3, 'gray')
+
+    plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
+
     return ax, loss_fig, loss_ax
 
 # Device parameters for convenience
