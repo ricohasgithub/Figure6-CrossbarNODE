@@ -81,6 +81,20 @@ def plot_loss(epochs, loss):
     plt.close()
     return fig, ax_loss
 
+def animate_model_output(fig, ax, output):
+
+    camera = Camera(fig)
+    
+    for j in range(output[2].size()[0]):
+        ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        ax.scatter3D(d1, d2, d3, 'gray')
+        ax.plot3D(output[0][:j], output[1][:j], output[2][:j], color=colors[i], linewidth=1.5)
+        camera.snap()
+        plt.pause(0.02)
+
+    animation = camera.animate()
+    animation.save('output/animation.gif', writer='PillowWriter', fps=10)
+
 def build_model(epochs, data_gen, device_params, method, time_steps):
 
     # Build and train models
@@ -150,22 +164,15 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
         model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
         loss_history.append(loss)
 
-        camera = Camera(fig)
-        for j in range(output[2].size()[0]):
-            ax.plot3D(output[0][:j], output[1][:j], output[2][:j], color=colors[i], linewidth=1.5)
-            camera.snap()
-            plt.pause(0.02)
-
-        animation = camera.animate()
-        animation.save('output/animation.gif', writer='PillowWriter', fps=5)
-
-        # ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
+        ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
         # ax.scatter3D(output[0], output[1], output[2], color='c')
 
         for j in range(len(loss)):
             loss_avg[j] += loss[j]
 
         print('Iter {:04d}'.format(i))
+
+        animate_model_output(fig, ax, data_gen, output)
 
     for i in range(len(loss_avg)):
         loss_avg[i] = (loss_avg[i]/iters)
