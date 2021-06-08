@@ -81,7 +81,7 @@ def plot_loss(epochs, loss):
     plt.close()
     return fig, ax_loss
 
-def animate_model_output(fig, ax, output):
+def animate_model_output(fig, ax, data_gen, output):
 
     camera = Camera(fig)
     
