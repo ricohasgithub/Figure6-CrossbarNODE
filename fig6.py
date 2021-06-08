@@ -86,6 +86,7 @@ def animate_model_output(fig, ax, data_gen, output):
     camera = Camera(fig)
     
     for j in range(output[2].size()[0]):
+        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
         ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
         ax.scatter3D(d1, d2, d3, 'gray')
         ax.plot3D(output[0][:j], output[1][:j], output[2][:j], color=colors[i], linewidth=1.5)
