@@ -82,7 +82,7 @@ class ODE_RNN(nn.Module):
 
 def train(model, data_gen, epochs):
 
-    #model.use_cb(True)
+    # model.use_cb(True)
 
     examples = data_gen.train_data
 

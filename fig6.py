@@ -90,6 +90,9 @@ def animate_model_output(fig, ax, data_gen, color, output):
     ax.scatter3D(d1, d2, d3, 'gray')
     
     for j in range(output[2].size()[0]):
+        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+        ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        ax.scatter3D(d1, d2, d3, 'blue')
         ax.plot3D(output[0][:j], output[1][:j], output[2][:j], color=color, linewidth=1.5)
         camera.snap()
         plt.pause(0.02)
@@ -140,8 +143,8 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
 
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
     # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
-    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
-    # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
+    # data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+    data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
     # data_gen = Epoch_Heart_Generator(160, 20, 40, 10, 2)
 
     fig = plt.figure()
@@ -166,11 +169,11 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
         model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
         loss_history.append(loss)
 
-        animate_model_output(fig, ax, data_gen, colors[i], output)
+        # animate_model_output(fig, ax, data_gen, colors[i], output)
 
-        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
-        ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
-        ax.scatter3D(d1, d2, d3, 'gray')
+        # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+        # ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        # ax.scatter3D(d1, d2, d3, 'gray')
 
         ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
         # ax.scatter3D(output[0], output[1], output[2], color='c')
