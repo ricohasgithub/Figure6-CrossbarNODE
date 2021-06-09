@@ -22,7 +22,7 @@ from utils.spiral_generator import Stochastic_Spiral_Generator
 from utils.spiral_generator import Regular_Spiral_Generator
 from utils.spiral_generator import Epoch_AM_Wave_Generator
 from utils.spiral_generator import Epoch_Heart_Generator
-from utils.spiral_generator import Epoch_Square_Generator
+from utils.spiral_generator import Epoch_Spiral_Generator
 
 from networks.ode import ODE_Func as ODE_Net
 from networks.ode import iter_train as iter_train
@@ -147,7 +147,7 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
     # data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
     # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
     # data_gen = Epoch_Heart_Generator(160, 20, 40, 10, 2)
-    data_gen = Epoch_Square_Generator(80, 80, 40, 10, 2)
+    data_gen = Epoch_Spiral_Generator(80, 80, 40, 10, 2)
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')

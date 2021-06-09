@@ -104,7 +104,7 @@ class Epoch_AM_Wave_Generator():
         self.true_x = (torch.cos(self.true_z)).squeeze().float()
         self.true_y = (torch.sin(self.x) + torch.sin(self.true_z_2)).squeeze().float()
 
-class Epoch_Square_Generator():
+class Epoch_Spiral_Generator():
     
     def __init__(self, n_pts, cutoff, depth, train_window, dimension):
 
