@@ -22,6 +22,7 @@ from utils.spiral_generator import Stochastic_Spiral_Generator
 from utils.spiral_generator import Regular_Spiral_Generator
 from utils.spiral_generator import Epoch_AM_Wave_Generator
 from utils.spiral_generator import Epoch_Heart_Generator
+from utils.spiral_generator import Epoch_Square_Generator
 
 from networks.ode import ODE_Func as ODE_Net
 from networks.ode import iter_train as iter_train
@@ -144,8 +145,9 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
     # Get regular spiral data with irregularly sampled time intervals (+ noise)
     # data_gen = Epoch_Spiral_Generator(80, 20, 40, 20, 2, 79)
     # data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
-    data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
+    # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
     # data_gen = Epoch_Heart_Generator(160, 20, 40, 10, 2)
+    data_gen = Epoch_Square_Generator(80, 80, 40, 10, 2)
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
@@ -264,7 +266,7 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-graph_average_performance(1, 100, device_params, "euler", 1)
+graph_average_performance(1, 200, device_params, "midpoint", 1)
 # graph_ode_solver_difference(10, 30, device_params)
 
 # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
