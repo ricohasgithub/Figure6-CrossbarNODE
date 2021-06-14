@@ -139,6 +139,37 @@ class Epoch_Spiral_Generator():
         self.true_x = (self.a * torch.exp(self.b * self.x) * torch.cos(self.true_z)).squeeze().float()
         self.true_y = (self.a * torch.exp(self.b * self.x) * torch.sin(self.true_z)).squeeze().float()
 
+class Epoch_Square_Generator():
+    
+    def __init__(self, n_pts, cutoff, depth, train_window, dimension):
+
+        # Store instance variables
+        self.n_pts = n_pts
+        self.cutoff = cutoff
+        self.depth = depth
+        self.train_window = train_window
+        self.dimension = dimension
+
+        self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
+
+        self.y_x = (torch.cos(self.x) + 0.05 * np.random.randn(n_pts)).float()
+        self.y_y = (torch.sin(self.x) + 0.05 * np.random.randn(n_pts)).float()
+
+        self.y = torch.cat((self.y_x, self.y_y), axis=0)
+        
+        self.true_z = torch.linspace(0, depth, n_pts).float()
+        self.true_x = torch.cos(self.true_z).float()
+        self.true_y = torch.sin(self.true_z).float()
+
+        self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
+
+        # self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
+        # self.y = torch.cat((torch.cos(self.x), torch.sin(self.x)), axis=0)
+        # self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
+
+        self.train_data = self.data[:cutoff]
+        self.test_start = self.data[0:]
+
 class Epoch_Heart_Generator():
 
     def __init__(self, n_pts, cutoff, depth, train_window, dimension):

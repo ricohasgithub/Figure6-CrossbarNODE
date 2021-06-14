@@ -80,9 +80,15 @@ class ODE_RNN(nn.Module):
         self.linear_hidden.use_cb(state)
         self.decoder.use_cb(state)
 
+    def remap(self):
+        self.linear_in.remap()
+        self.linear_hidden.remap()
+        self.linear_hidden2.remap()
+        self.decoder.remap()
+
 def train(model, data_gen, epochs):
 
-    # model.use_cb(True)
+    model.use_cb(True)
 
     examples = data_gen.train_data
 
@@ -105,6 +111,8 @@ def train(model, data_gen, epochs):
             epoch_loss.append(loss)
             loss.backward()
             optimizer.step()
+
+            model.remap()
         
         loss_history.append(sum(epoch_loss) / len(examples))
         epoch_loss = []
