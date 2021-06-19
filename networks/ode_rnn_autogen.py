@@ -67,7 +67,10 @@ class ODE_RNN(nn.Module):
         # RNN iteration
         for i, x_i in enumerate(x):
             if i > 0:
-                h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1], method=self.method)[1]
+                if self.step_size != None:
+                    h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1], method=self.method, options=dict(step_size=self.step_size))[1]
+                else:
+                    h_ip = odeint(self.ode_func, h_i, t[i-1 : i+1], method=self.method)[1]
                 h_i = self.nonlinear(self.linear_hidden2(self.nonlinear(self.linear_in(x_i) + self.linear_hidden(h_ip))))
             #h_i = self.rnn_cell(x_i, h_ip)
 
@@ -88,7 +91,7 @@ class ODE_RNN(nn.Module):
 
 def train(model, data_gen, epochs):
 
-    model.use_cb(True)
+    # model.use_cb(True)
 
     examples = data_gen.train_data
 
@@ -112,7 +115,7 @@ def train(model, data_gen, epochs):
             loss.backward()
             optimizer.step()
 
-            model.remap()
+            # model.remap()
         
         loss_history.append(sum(epoch_loss) / len(examples))
         epoch_loss = []
@@ -128,8 +131,6 @@ def train(model, data_gen, epochs):
     dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
     output = []
     all_t = []
-
-    # model.use_cb(True)
     
     with torch.no_grad():
         for i, (example, label) in enumerate(seq):

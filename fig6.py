@@ -1,4 +1,10 @@
 
+'''
+TODO:
+    - Hardware related graphs: currents, mapping, crossbar variability
+    - Performance graphs: different solvers, different time meshes
+'''
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -204,6 +210,47 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
 
     return fig, ax_loss, loss_avg
 
+def graph_step_size_difference(iters, epochs, method, device_params):
+
+    fixed_step_sizes = [1e-2, 1e-1, 1, 10, 100, 1000]
+    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+
+    colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet", "black"]
+
+    ax = plt.axes(projection='3d')
+
+    loss_fig, loss_ax = plt.subplots()
+    all_loss = []
+
+    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+
+    for i in range(len(fixed_step_sizes)):
+
+        print("NOW USING: ", fixed_step_sizes[i])
+
+        model, output, loss = build_model(epochs, data_gen, device_params, method, fixed_step_sizes[i])
+        ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
+        loss_ax.plot(list(range(epochs)), loss, colors[i], linewidth=1.5)
+
+        # loss_avg = get_average_performance(iters, epochs, device_params, fixed_step_methods[i], 1)
+        # ax.plot(list(range(epochs)), loss_avg, colors[i], linewidth=1.5)
+
+        all_loss.append(Line2D([0], [0], color=colors[i], lw=4))
+
+    loss_fig.savefig('./output/ode_solver_difference.png', dpi=600, transparent=True)
+    loss_ax.legend(all_loss, fixed_step_sizes)
+    ax.legend(all_loss, fixed_step_sizes)
+
+    # Plot true trajectory and observation points
+    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+    ax.scatter3D(d1, d2, d3, 'gray')
+
+    plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
+
+    return ax, loss_fig, loss_ax
+
+
 def graph_ode_solver_difference(iters, epochs, device_params):
 
     # List of ODE Solver Functions
@@ -268,8 +315,9 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-graph_average_performance(1, 200, device_params, "midpoint", 1)
+# graph_average_performance(1, 30, device_params, "euler")
 # graph_ode_solver_difference(10, 30, device_params)
+graph_step_size_difference(1, 30, "rk4", device_params)
 
 # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
 
