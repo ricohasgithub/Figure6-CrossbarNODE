@@ -80,6 +80,9 @@ def plot_cmap(model):
 
     return fig, ax_cmap
 
+def plot_currents(model):
+    print(len(model.cb.current_history))
+
 def plot_loss(epochs, loss):
     # Plot loss history
     fig, ax_loss = plt.subplots()
@@ -187,6 +190,7 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
 
         ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
         # ax.scatter3D(output[0], output[1], output[2], color='c')
+        plot_currents(model)
 
         for j in range(len(loss)):
             loss_avg[j] += loss[j]
@@ -216,7 +220,7 @@ def graph_step_size_difference(iters, epochs, method, device_params):
     data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
 
     colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet", "black"]
-
+ 
     ax = plt.axes(projection='3d')
 
     loss_fig, loss_ax = plt.subplots()
@@ -315,9 +319,9 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-# graph_average_performance(1, 30, device_params, "euler")
+graph_average_performance(1, 30, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)
-graph_step_size_difference(1, 30, "rk4", device_params)
+# graph_step_size_difference(1, 30, "rk4", device_params)
 
 # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
 

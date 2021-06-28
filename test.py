@@ -1,69 +1,18 @@
-"""
-Louis Primeau
-University of Toronto
-Mar 2021
-This python script outputs graphs for Figure 6 of the paper. This includes:
-part a) Spiral datasets and predictions
-"""
-
 import torch
-import networks.ode as ODE
-
-import time
-import random
-import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
 import numpy as np
-import seaborn as sns
+import random
+import os
+import time
 
-from torchdiffeq import odeint
+from crossbar import crossbar
 
-def train(examples, model, epochs):
-    
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    loss_function = torch.nn.MSELoss()
-    loss_history = []
-    #model.remap("0")
-    for epoch in range(epochs):
-        #random.shuffle(examples)
-        epoch_loss = []
-        for i, (example, label) in enumerate(examples):
-            
-            optimizer.zero_grad()
-            prediction = odeint(model, example)
-            loss = loss_function(prediction, label)
-            epoch_loss.append(loss)
-            loss.backward()
-            optimizer.step()
-        
-        loss_history.append(sum(epoch_loss) / len(examples))
-        epoch_loss = []
+# This testbench tries out a 100 matrices and vectors to multiply.
 
-    return loss_history
-
-def test(seq, t, length, model):
-    dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
-    print(dt, t[-1] - t[-2])
-    output = []
-    all_t = []
-    with torch.no_grad():
-        for i in range(length):
-            prediction = model((seq, t + dt)).reshape(1, -1, 1)
-            seq = torch.cat((seq[1:], prediction), axis=0)
-            all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
-            t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
-            output.append(prediction)
-
-    return torch.cat(output, axis=0), torch.cat(all_t, axis=0)
-
-pi = 3.14159265359
-
-# DEVICE PARAMS for convenience.
-device_params = {"Vdd": 1.8,
-                 "r_wl": 20,
-                 "r_bl": 20,
-                 "m": 512,
-                 "n": 512,
+device_params = {"Vdd": 0.2,
+                 "r_wl": 20.0,
+                 "r_bl": 20.0,
+                 "m": 32,
+                 "n": 32,
                  "r_on": 1e4,
                  "r_off": 1e5,
                  "dac_resolution": 4,
@@ -73,51 +22,46 @@ device_params = {"Vdd": 1.8,
                  "tile_cols": 8,
                  "r_cmos_line": 600,
                  "r_cmos_transistor": 20,
+                 "r_on_stddev": 1e3,
+                 "r_off_stddev": 1e4,
                  "p_stuck_on": 0.01,
                  "p_stuck_off": 0.01,
-                 "method": "linear",
-                 "r_on_mean": 1e4,
-                 "r_on_stddev": 1e3,
-                 "r_off_mean": 1e5,
-                 "r_off_stddev": 1e4,
-                 "device_resolution": 4,
+                 "method": "viability",
+                 "viability": 0.05,
 }
 
-# MAKE DATA
+cb = crossbar.crossbar(device_params)
 
-n_pts = 150 # How many data points to generate
-size = 2 # 2D dataset
-tw = 10 # Train window size
-cutoff = 50 # Up to which data point is used for training
+seed = 12
+random.seed(seed)
+os.environ['PYTHONHASHSEED'] = str(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
 
-x = torch.linspace(0, 20, n_pts).reshape(1, -1)
-y = torch.cat((torch.cos(x), torch.sin(x)), axis=0)
-data = [((y[:, i:i+tw].reshape(-1, size, 1), x[:, i:i+tw].reshape(-1, 1, 1)), (y[:, i+tw:i+tw+1].reshape(size, -1))) for i in range(y.size(1) - tw)]
-train_data, test_start = data[:cutoff], data[cutoff]
+max_rows = device_params["m"] // 2
+max_cols = device_params["n"]
 
-# CONFIGURE PLOTS
-fig1 = plt.figure()
-ax1 = plt.axes(projection='3d')
+test_num = 1
 
-# TRAIN MODELS AND PLOT
-time_steps = 30
-epochs = 20
-num_predict= 30
-start_time = time.time()
-for i in range(1):
-    print("Model", i, "| elapsed time:", "{:5.2f}".format((time.time() - start_time) / 60), "min")
-    model = rnn_ode.RNN_ODE(2, 6, 2, crossbar(device_params))
-    losses = train(train_data, model, epochs)
-    # model.node_rnn.observe(True)
-    #model.use_cb(True)
-    output, times = test(test_start[0][0], test_start[0][1], num_predict, model)
-    # model.use_cb(False)
+matrices = [torch.randint(-10, 10, (max_rows, max_cols)) for _ in range(test_num)]
+vectors = [torch.randint(-10, 10, (max_cols, 1)) for _ in range(test_num)]
 
-    o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), times.squeeze()
-    ax1.plot3D(o1, o2, o3, 'gray')
+cb_time, t_time, error = 0.0, 0.0, 0.0
+for matrix, vector in zip(matrices, vectors):
+    cb.clear()
+    ticket = cb.register_linear(torch.transpose(matrix,0,1))
     
-    d1, d2, d3 = y[0, :].squeeze(), y[1, :].squeeze(), x.squeeze()
-    ax1.plot3D(d1, d2, d3, 'orange')
-    
-#fig1.savefig('output/fig6/1.png', dpi=600, transparent=True)
-plt.show()
+    start_time = time.time()
+    output = ticket.vmm(vector, v_bits=4)
+    cb_time += time.time() - start_time
+
+    start_time = time.time()
+    target = matrix.matmul(vector)
+    t_time += time.time() - start_time
+
+    error += torch.norm(target - output) / torch.norm(matrix.double())
+
+#current_history = torch.cat(current_history, axis=1)
+print("Average crossbar vmm time:", cb_time / test_num, "s")
+print("Average torch vmm time:", t_time / test_num, "s")
+print("Average relative error:", error / test_num)
