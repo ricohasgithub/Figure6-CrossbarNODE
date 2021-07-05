@@ -49,6 +49,9 @@ from networks.lstm_rnn import train as lstm_train
 from networks.gru_rnn import GRU_RNN as GRU_RNN
 from networks.gru_rnn import train as gru_train
 
+from networks.gru_rnn_autogen import GRU_RNN as GRU_RNN_autogen
+from networks.gru_rnn_autogen import train as gru_rnn_autogen_train
+
 # Color graphing utility
 def random_color():
     rgb = [random.uniform(0.0, 1.0), random.uniform(0.0, 1.0), random.uniform(0.0, 1.0)]
