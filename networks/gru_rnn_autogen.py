@@ -34,7 +34,6 @@ class GRU_RNN(nn.Module):
 
         # Model current output hidden state dynamics
         h_i = torch.zeros(self.hidden_layer_size, 1)
-        output = torch.zeros(N, self.output_size)
 
         # Initial layer (h0)
         if t[0] > 0:
@@ -42,17 +41,14 @@ class GRU_RNN(nn.Module):
             h_i = self.rnn_cell(x[0], h_i)
             h_i = torch.transpose(h_i, 0, 1)
             out = self.linear(torch.relu(h_i))
-            output[0] = out.reshape(-1)
 
         for i in range(1, N):
 
             h_i = self.rnn_cell(x[0], h_i)
             h_i = torch.transpose(h_i, 0, 1)
             out = self.linear(torch.relu(h_i))
-            
-            output[i] = out.reshape(-1)
 
-        return output
+        return out
 
     def use_cb(self, state):
         self.linear_in.use_cb(state)

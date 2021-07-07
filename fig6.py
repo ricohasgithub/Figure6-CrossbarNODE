@@ -303,8 +303,8 @@ def graph_ode_solver_difference(iters, epochs, device_params):
 device_params = {"Vdd": 0.2,
                  "r_wl": 20,
                  "r_bl": 20,
-                 "m": 64,
-                 "n": 64,
+                 "m": 256,
+                 "n": 256,
                  "r_on": 1e4,
                  "r_off": 1e5,
                  "dac_resolution": 4,
@@ -322,9 +322,20 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-graph_average_performance(1, 30, device_params, "euler", 1)
+# graph_average_performance(1, 30, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)
 # graph_step_size_difference(1, 30, "rk4", device_params)
+
+data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
+model = GRU_RNN_autogen(2, 6, 2, device_params)
+losses_ode_rnn, output = gru_rnn_autogen_train(model, data_gen, 100)
+
+ax = plt.axes(projection='3d')
+ax.plot3D(output[0], output[1], output[2], color="black", linewidth=1.5)
+
+d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+ax.scatter3D(d1, d2, d3, 'gray')
 
 # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
 
