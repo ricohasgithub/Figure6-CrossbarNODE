@@ -133,7 +133,7 @@ def get_average_gru_performance(iters, epochs, device_params):
     data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
 
     model = GRU_RNN_autogen(2, 6, 2, device_params)
-    losses_ode_rnn, output = gru_rnn_autogen_train(model, data_gen, epochs)
+    losses_gru, output = gru_rnn_autogen_train(model, data_gen, epochs)
 
     ax = plt.axes(projection='3d')
     ax.plot3D(output[0], output[1], output[2], color="black", linewidth=1.5)
@@ -141,6 +141,43 @@ def get_average_gru_performance(iters, epochs, device_params):
     d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
     ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
     ax.scatter3D(d1, d2, d3, 'gray')
+
+    return losses_gru, output
+
+def get_average_gru_performance(iters, epochs, device_params, data_gen):
+
+    model = GRU_RNN_autogen(2, 6, 2, device_params)
+    losses_gru, output = gru_rnn_autogen_train(model, data_gen, epochs)
+
+    ax = plt.axes(projection='3d')
+    ax.plot3D(output[0], output[1], output[2], color="black", linewidth=1.5)
+
+    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+    ax.scatter3D(d1, d2, d3, 'gray')
+
+    return losses_gru
+
+def get_average_performance_datagen(iters, epochs, data_gen, device_params, method, time_steps):
+
+    loss_avg = [0] * epochs
+    loss_history = []
+
+    for i in range(iters):
+
+        # Get current model output
+        model, output, loss = build_model(epochs, data_gen, device_params, method, time_steps)
+        loss_history.append(loss)
+
+        for j in range(len(loss)):
+            loss_avg[j] += loss[j]
+
+        print('Iter {:04d}'.format(i))
+
+    for i in range(len(loss_avg)):
+        loss_avg[i] = (loss_avg[i]/iters)
+
+    return loss_avg
 
 def get_average_performance(iters, epochs, device_params, method, time_steps):
 
@@ -230,6 +267,25 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
     fig.savefig('./output/training_avg.png', dpi=600, transparent=True)
 
     return fig, ax_loss, loss_avg
+
+def graph_model_difference(iters, epochs, device_params, method, time_steps):
+
+    data_gen = Epoch_Square_Generator(80, 20, 40, 10, 2)
+
+    # Get ODE-RNN performance
+    loss_ode = get_average_performance_datagen(iters, epochs, data_gen, device_params, method, time_steps)
+    # Get GRU-RNN performance
+    loss_gru = get_average_gru_performance(iters, epochs, device_params, data_gen)
+
+    # Plot loss history and average loss
+    fig, ax_loss = plt.subplots()
+    fig.suptitle('Average MSE Loss')
+
+    for i in range(iters):
+        ax_loss.plot(list(range(epochs)), loss_ode[i], color="blue", linewidth=1)   
+        ax_loss.plot(list(range(epochs)), loss_gru[i], color="red", linewidth=1)     
+
+    fig.savefig('./output/training_avg.png', dpi=600, transparent=True)
 
 def graph_step_size_difference(iters, epochs, method, device_params):
 
@@ -338,6 +394,8 @@ device_params = {"Vdd": 0.2,
 # graph_average_performance(1, 30, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)
 # graph_step_size_difference(1, 30, "rk4", device_params)
+
+graph_model_difference(1, 30, device_params, "euler", 1)
 
 # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
 

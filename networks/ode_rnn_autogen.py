@@ -91,7 +91,7 @@ class ODE_RNN(nn.Module):
 
 def train(model, data_gen, epochs):
 
-    model.use_cb(True)
+    # model.use_cb(True)
 
     examples = data_gen.train_data
 
@@ -115,7 +115,7 @@ def train(model, data_gen, epochs):
             loss.backward()
             optimizer.step()
 
-            model.remap()
+            # model.remap()
         
         loss_history.append(sum(epoch_loss) / len(examples))
         epoch_loss = []
@@ -131,8 +131,6 @@ def train(model, data_gen, epochs):
     dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
     output = []
     all_t = []
-
-    model.use_cb(False)
     
     with torch.no_grad():
         for i, (example, label) in enumerate(seq):
