@@ -149,14 +149,6 @@ def get_average_gru_performance_datagen(iters, epochs, device_params, data_gen):
     model = GRU_RNN_autogen(2, 6, 2, device_params)
     losses_gru, output = gru_rnn_autogen_train(model, data_gen, epochs)
 
-    ax = plt.axes(projection='3d')
-    ax.set_title("GRU-RNN Output")
-    ax.plot3D(output[0], output[1], output[2], color="black", linewidth=1.5)
-
-    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
-    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
-    ax.scatter3D(d1, d2, d3, 'gray')
-
     return losses_gru
 
 def get_average_performance_datagen(iters, epochs, data_gen, device_params, method, time_steps):
@@ -172,14 +164,6 @@ def get_average_performance_datagen(iters, epochs, data_gen, device_params, meth
 
         for j in range(len(loss)):
             loss_avg[j] += loss[j]
-
-        ax = plt.axes(projection='3d')
-        ax.set_title("ODE-RNN Output")
-        ax.plot3D(output[0], output[1], output[2], color="black", linewidth=1.5)
-
-        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
-        ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
-        ax.scatter3D(d1, d2, d3, 'gray')
 
         print('Iter {:04d}'.format(i))
 
