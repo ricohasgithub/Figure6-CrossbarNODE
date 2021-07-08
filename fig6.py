@@ -274,10 +274,16 @@ def graph_model_difference(iters, epochs, device_params, method, time_steps):
     fig, ax_loss = plt.subplots()
     fig.suptitle('Average MSE Loss')
 
-    ax_loss.plot(list(range(epochs)), loss_ode, color="blue", linewidth=1)   
-    ax_loss.plot(list(range(epochs)), loss_gru, color="red", linewidth=1)    
+    ax_loss.plot(list(range(epochs)), loss_ode, color="blue", linewidth=1)
+    ax_loss.plot(list(range(epochs)), loss_gru, color="red", linewidth=1)
 
-    fig.savefig('./output/training_avg.png', dpi=600, transparent=True)
+    all_loss = []
+    all_loss.append(Line2D([0], [0], color="blue", lw=4))
+    all_loss.append(Line2D([0], [0], color="red", lw=4))
+
+    ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN"])
+
+    fig.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
 
 def graph_step_size_difference(iters, epochs, method, device_params):
 
