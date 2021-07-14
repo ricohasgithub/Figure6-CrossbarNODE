@@ -390,11 +390,13 @@ def single_model_plot(epochs, device_params, method, time_steps):
     ode_rnn_axs[-1, -1].axis('off')
 
     output_ode_rnns = []
+    cmap_ode_rnns = []
 
     gru_rnn_fig, gru_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
     gru_rnn_axs[-1, -1].axis('off')
 
     output_gru_rnns = []
+    cmap_gru_rnns = []
 
     # Plot loss history and average loss
     fig_loss, ax_loss = plt.subplots()
@@ -417,13 +419,15 @@ def single_model_plot(epochs, device_params, method, time_steps):
 
         # Plot crossbar mapping and loss
         fig_cmap_ode, ax_cmap_ode = plot_cmap(ode_rnn)
+        cmap_ode_rnns.append((fig_cmap_ode, ax_cmap_ode))
         fig_loss_ode, ax_loss_ode = plot_loss(epochs, losses_ode_rnn)
 
         fig_cmap_gru, ax_cmap_gru = plot_cmap(gru_rnn)
+        cmap_gru_rnns.append((fig_cmap_gru, ax_cmap_gru))
         fig_loss_gru, ax_loss_gru = plot_loss(epochs, losses_gru_rnn)
 
-        ax_loss.plot(list(range(epochs)), losses_ode_rnn, color="blue", linewidth=1)
-        ax_loss.plot(list(range(epochs)), losses_gru_rnn, color="red", linewidth=1)
+        ax_loss.plot(list(range(epochs)), losses_ode_rnn, color=colors[i], linewidth=1, linestyle="solid")
+        ax_loss.plot(list(range(epochs)), losses_gru_rnn, color=colors[i], linewidth=1, linestyle="dashed")
 
     # Plot each of the 3D outputs of each ODE RNN model
     count = 0
@@ -468,15 +472,18 @@ def single_model_plot(epochs, device_params, method, time_steps):
         count += 1
 
     all_loss = []
-    all_loss.append(Line2D([0], [0], color="blue", lw=4))
-    all_loss.append(Line2D([0], [0], color="red", lw=4))
+    all_loss.append(Line2D([0], [0], color="black", linestyle="solid", lw=4))
+    all_loss.append(Line2D([0], [0], color="black", linestyle="dashed", lw=4))
+
+    for color in colors:
+        all_loss.append(Line2D([0], [0], color=color, linestyle="solid", lw=4))
 
     # Configure tight layout for 2x3 plots
     ode_rnn_fig.tight_layout()
     gru_rnn_fig.tight_layout()
 
     # Plot all axis labels
-    ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN"])
+    ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "0.05", "0.075", "0.1", "0.25", "0.5"])
 
     # Save all figures
     fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
