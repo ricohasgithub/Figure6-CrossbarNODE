@@ -30,6 +30,7 @@ from utils.spiral_generator import Epoch_AM_Wave_Generator
 from utils.spiral_generator import Epoch_Heart_Generator
 from utils.spiral_generator import Epoch_Spiral_Generator
 from utils.spiral_generator import Epoch_Square_Generator
+from utils.spiral_generator import Epoch_Noise_Spiral_Generator
 
 from networks.ode import ODE_Func as ODE_Net
 from networks.ode import iter_train as iter_train
@@ -205,7 +206,7 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
     # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
     # data_gen = Epoch_Heart_Generator(160, 20, 40, 10, 2)
     # data_gen = Epoch_Spiral_Generator(80, 80, 40, 10, 2)
-    data_gen = Epoch_Square_Generator(80, 20, 40, 10, 2)
+    data_gen = Epoch_Test_Spiral_Generator(80, 20, 40, 10, 2)
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
@@ -263,7 +264,7 @@ def graph_average_performance(iters, epochs, device_params, method, time_steps):
 
 def graph_model_difference(iters, epochs, device_params, method, time_steps):
 
-    data_gen = Epoch_Square_Generator(80, 20, 40, 10, 2)
+    data_gen = Epoch_Test_Spiral_Generator(80, 20, 40, 10, 2)
 
     # Get ODE-RNN performance
     loss_ode = get_average_performance_datagen(iters, epochs, data_gen, device_params, method, time_steps)
@@ -365,6 +366,61 @@ def graph_ode_solver_difference(iters, epochs, device_params):
     plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
 
     return ax, loss_fig, loss_ax
+
+def single_model_plot(epochs, method, device_params, time_steps):
+
+    data_gen_n0 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.05)
+    data_gen_n1 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.075)
+    data_gen_n2 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.1)
+    data_gen_n3 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.25)
+    data_gen_n4 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.5)
+
+    data_gens = [data_gen_n0, data_gen_n1, data_gen_n2, data_gen_n3, data_gen_n4]
+    noise_labels = ["0.05", "0.075", "0.1", "0.25", "0.5"]
+    colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet"]
+
+    models_ode_rnn = []
+    models_gru_rnn = []
+
+    # Plot model outputs
+    output_ax_ode = plt.axes(projection='3d')
+    output_ax_gru = plt.axes(projection='3d')
+
+    # Plot loss history and average loss
+    fig_loss, ax_loss = plt.subplots()
+    fig_loss.suptitle('Average MSE Loss')
+
+    for data_gen in data_gens:
+        
+        # Build, train, and plot model output
+        ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
+        losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
+        output_ax_ode.plot3D(output_ode_rnn[0], output_ode_rnn[1], output_ode_rnn[2], color="black", linewidth=1.5)
+        models_ode_rnn.append(ode_rnn)
+
+        gru_rnn = GRU_RNN_autogen(2, 6, 2, device_params)
+        losses_gru_rnn, output_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
+        output_ax_gru.plot3D(output_gru_rnn[0], output_gru_rnn[1], output_gru_rnn[2], color="black", linewidth=1.5)
+        models_gru_rnn.append(gru_rnn)
+
+        # Plot crossbar mapping and loss
+        fig_cmap_ode, ax_cmap_ode = plot_cmap(ode_rnn)
+        fig_loss_ode, ax_loss_ode = plot_loss(epochs, losses_ode_rnn)
+
+        fig_cmap_gru, ax_cmap_gru = plot_cmap(gru_rnn)
+        fig_loss_gru, ax_loss_gru = plot_loss(epochs, losses_gru_rnn)
+
+        ax_loss.plot(list(range(epochs)), losses_ode_rnn, color="blue", linewidth=1)
+        ax_loss.plot(list(range(epochs)), losses_gru_rnn, color="red", linewidth=1)
+
+    all_loss = []
+    all_loss.append(Line2D([0], [0], color="blue", lw=4))
+    all_loss.append(Line2D([0], [0], color="red", lw=4))
+
+    ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN"])
+
+    fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
+    
 
 # Device parameters for convenience
 device_params = {"Vdd": 0.2,
