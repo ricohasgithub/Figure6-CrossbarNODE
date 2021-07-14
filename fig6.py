@@ -419,11 +419,11 @@ def single_model_plot(epochs, device_params, method, time_steps):
 
         # Plot crossbar mapping and loss
         fig_cmap_ode, ax_cmap_ode = plot_cmap(ode_rnn)
-        cmap_ode_rnns.append((fig_cmap_ode, ax_cmap_ode))
+        cmap_ode_rnns.append([fig_cmap_ode, ax_cmap_ode])
         fig_loss_ode, ax_loss_ode = plot_loss(epochs, losses_ode_rnn)
 
         fig_cmap_gru, ax_cmap_gru = plot_cmap(gru_rnn)
-        cmap_gru_rnns.append((fig_cmap_gru, ax_cmap_gru))
+        cmap_gru_rnns.append([fig_cmap_gru, ax_cmap_gru])
         fig_loss_gru, ax_loss_gru = plot_loss(epochs, losses_gru_rnn)
 
         ax_loss.plot(list(range(epochs)), losses_ode_rnn, color=colors[i], linewidth=1, linestyle="solid")
@@ -486,6 +486,20 @@ def single_model_plot(epochs, device_params, method, time_steps):
     ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "0.05", "0.075", "0.1", "0.25", "0.5"])
 
     # Save all figures
+    for i in range (len(cmap_ode_rnns)):
+
+        cmap_ode = cmap_ode_rnns(i)
+
+        save_name = "./output/cmap/ode_rnn" + i + ".png"
+        cmap_ode[0].savefig(save_name, dpi=600, transparent=True)
+
+    for i in range (len(cmap_gru_rnns)):
+
+        cmap_gru = cmap_gru_rnns(i)
+
+        save_name = "./output/cmap/gru_rnn" + i + ".png"
+        cmap_gru[0].savefig(save_name, dpi=600, transparent=True)
+
     fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
     ode_rnn_fig.savefig('./output/ode_noise_comp.png', dpi=600, transparent=True)
     gru_rnn_fig.savefig('./output/gru_noise_comp.png', dpi=600, transparent=True)
