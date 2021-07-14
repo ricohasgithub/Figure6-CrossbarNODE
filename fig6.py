@@ -40,6 +40,7 @@ from networks.ode_rnn import train as ode_rnn_train
 
 from networks.ode_rnn_autogen import ODE_RNN as ODE_RNN_autogen
 from networks.ode_rnn_autogen import train as ode_rnn_autogen_train
+from networks.ode_rnn_autogen import test as ode_rnn_autogen_test
 
 from networks.latent_ode import ODE_RNN as ODE_RNN_Test
 from networks.latent_ode import train as ode_rnn_test_train
@@ -52,6 +53,7 @@ from networks.gru_rnn import train as gru_train
 
 from networks.gru_rnn_autogen import GRU_RNN as GRU_RNN_autogen
 from networks.gru_rnn_autogen import train as gru_rnn_autogen_train
+from networks.gru_rnn_autogen import test as gru_rnn_autogen_test
 
 # Color graphing utility
 def random_color():
@@ -369,6 +371,7 @@ def graph_ode_solver_difference(iters, epochs, device_params):
 
 def single_model_plot(epochs, device_params, method, time_steps):
 
+    # Create data generators with different nosie amplitudes
     data_gen_n0 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.05)
     data_gen_n1 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.075)
     data_gen_n2 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.1)
@@ -383,24 +386,30 @@ def single_model_plot(epochs, device_params, method, time_steps):
     models_gru_rnn = []
 
     # Plot model outputs
-    output_ax_ode = plt.axes(projection='3d')
-    output_ax_gru = plt.axes(projection='3d')
+    ode_rnn_fig, ode_rnn_axs = plt.subplots(ncols=5, figsize=(20, 10), subplot_kw=dict(projection='3d'))
+    output_ode_rnns = []
+
+    # output_ax_gru = plt.axes(projection='3d')
+    # output_ax_gru.set_title('GRU-RNN Outputs')
 
     # Plot loss history and average loss
     fig_loss, ax_loss = plt.subplots()
     fig_loss.suptitle('Average MSE Loss')
 
-    for data_gen in data_gens:
+    for i in range(len(data_gens)):
+
+        data_gen = data_gens[i]
+        output_ax_ode = ode_rnn_axs[i]
         
         # Build, train, and plot model output
         ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
         losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
-        output_ax_ode.plot3D(output_ode_rnn[0], output_ode_rnn[1], output_ode_rnn[2], color="black", linewidth=1.5)
+        output_ode_rnns.append(output_ode_rnn)
         models_ode_rnn.append(ode_rnn)
 
         gru_rnn = GRU_RNN_autogen(2, 6, 2, device_params)
         losses_gru_rnn, output_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
-        output_ax_gru.plot3D(output_gru_rnn[0], output_gru_rnn[1], output_gru_rnn[2], color="black", linewidth=1.5)
+        # output_ax_gru.plot3D(output_gru_rnn[0], output_gru_rnn[1], output_gru_rnn[2], color=colors[i], linewidth=1.5)
         models_gru_rnn.append(gru_rnn)
 
         # Plot crossbar mapping and loss
@@ -413,12 +422,26 @@ def single_model_plot(epochs, device_params, method, time_steps):
         ax_loss.plot(list(range(epochs)), losses_ode_rnn, color="blue", linewidth=1)
         ax_loss.plot(list(range(epochs)), losses_gru_rnn, color="red", linewidth=1)
 
+    # Plot each of the 3D outputs of each ODE RNN model
+    for i, output_ax_ode in enumerate(ode_rnn_axs.flat):
+
+        output_ode_rnn = output_ode_rnns[i]
+        output_ax_ode.plot3D(output_ode_rnn[0], output_ode_rnn[1], output_ode_rnn[2], color=colors[i], linewidth=1.5)
+        
+        title_text = "ODE-RNN noise +" + noise_labels[i]
+        output_ax_ode.set_title(title_text)
+
+        data_gen = data_gens[i]
+
+        output_ax_ode.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+        output_ax_ode.scatter3D(d1, d2, d3, 'blue')
+
     all_loss = []
     all_loss.append(Line2D([0], [0], color="blue", lw=4))
     all_loss.append(Line2D([0], [0], color="red", lw=4))
 
     ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN"])
-
     fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
     
 
