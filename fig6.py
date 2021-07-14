@@ -367,7 +367,7 @@ def graph_ode_solver_difference(iters, epochs, device_params):
 
     return ax, loss_fig, loss_ax
 
-def single_model_plot(epochs, method, device_params, time_steps):
+def single_model_plot(epochs, device_params, method, time_steps):
 
     data_gen_n0 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.05)
     data_gen_n1 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.075)
@@ -445,11 +445,13 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
+single_model_plot(30, device_params, "euler", 1)
+
 # graph_average_performance(1, 30, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)
 # graph_step_size_difference(1, 30, "rk4", device_params)
 
-graph_model_difference(1, 30, device_params, "euler", 1)
+# graph_model_difference(1, 30, device_params, "euler", 1)
 
 # data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
 

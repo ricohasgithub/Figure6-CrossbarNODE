@@ -140,3 +140,30 @@ def train(model, data_gen, epochs):
 
     # return loss_history, ax
     return loss_history, [o1, o2, o3]
+
+
+def test(model, data_gen):
+    
+    # Test
+    seq = data_gen.test_start
+    t = data_gen.test_start[0][0][1]
+    num_predict = 30
+    length = num_predict
+
+    dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
+    output = []
+    all_t = []
+    
+    with torch.no_grad():
+        for i, (example, label) in enumerate(seq):
+            prediction = model(example[1], example[0]).reshape(1, -1, 1)
+            output.append(prediction)
+            all_t.append(example[1].unsqueeze(0)[0][9])
+
+    output, times = torch.cat(output, axis=0), torch.cat(all_t, axis=0)
+
+    print(output.size())
+    print(times.size())
+
+    o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), times.squeeze()
+    return [o1, o2, o3]
