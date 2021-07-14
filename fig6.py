@@ -463,7 +463,7 @@ def single_model_plot(epochs, device_params, method, time_steps):
         output_ax_gru.scatter3D(d1, d2, d3, 'blue')
 
         output_ax_gru = output_gru_rnns[count]
-        output_ax_gru.plot3D(output_ode_rnn[0], output_ode_rnn[1], output_ode_rnn[2], color="black", linewidth=1.5)
+        output_ax_gru.plot3D(output_ax_gru[0], output_ax_gru[1], output_ax_gru[2], color="black", linewidth=1.5)
 
         count += 1
 
