@@ -391,8 +391,10 @@ def single_model_plot(epochs, device_params, method, time_steps):
 
     output_ode_rnns = []
 
-    # output_ax_gru = plt.axes(projection='3d')
-    # output_ax_gru.set_title('GRU-RNN Outputs')
+    gru_rnn_fig, gru_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
+    gru_rnn_axs[-1, -1].axis('off')
+
+    output_gru_rnns = []
 
     # Plot loss history and average loss
     fig_loss, ax_loss = plt.subplots()
@@ -410,7 +412,7 @@ def single_model_plot(epochs, device_params, method, time_steps):
 
         gru_rnn = GRU_RNN_autogen(2, 6, 2, device_params)
         losses_gru_rnn, output_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
-        # output_ax_gru.plot3D(output_gru_rnn[0], output_gru_rnn[1], output_gru_rnn[2], color=colors[i], linewidth=1.5)
+        output_gru_rnns.append(output_gru_rnn)
         models_gru_rnn.append(gru_rnn)
 
         # Plot crossbar mapping and loss
@@ -444,14 +446,42 @@ def single_model_plot(epochs, device_params, method, time_steps):
 
         count += 1
 
+    # Plot each of the 3D outputs of each GRU RNN model
+    count = 0
+    for i, output_ax_gru in enumerate(gru_rnn_axs.flat):
+
+        if count == 5:
+            break
+
+        title_text = "GRU-RNN noise +" + noise_labels[count]
+        output_ax_gru.set_title(title_text)
+
+        data_gen = data_gens[count]
+
+        output_ax_gru.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+        output_ax_gru.scatter3D(d1, d2, d3, 'blue')
+
+        output_ax_gru = output_gru_rnns[count]
+        output_ax_gru.plot3D(output_ode_rnn[0], output_ode_rnn[1], output_ode_rnn[2], color="black", linewidth=1.5)
+
+        count += 1
+
     all_loss = []
     all_loss.append(Line2D([0], [0], color="blue", lw=4))
     all_loss.append(Line2D([0], [0], color="red", lw=4))
 
+    # Configure tight layout for 2x3 plots
     ode_rnn_fig.tight_layout()
+    gru_rnn_fig.tight_layout()
 
+    # Plot all axis labels
     ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN"])
+
+    # Save all figures
     fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
+    ode_rnn_fig.savefig('./output/ode_noise_comp.png', dpi=600, transparent=True)
+    gru_rnn_fig.savefig('./output/gru_noise_comp.png', dpi=600, transparent=True)
     
 
 # Device parameters for convenience
