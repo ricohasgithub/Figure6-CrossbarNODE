@@ -386,7 +386,9 @@ def single_model_plot(epochs, device_params, method, time_steps):
     models_gru_rnn = []
 
     # Plot model outputs
-    ode_rnn_fig, ode_rnn_axs = plt.subplots(ncols=5, figsize=(20, 10), subplot_kw=dict(projection='3d'))
+    ode_rnn_fig, ode_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
+    ode_rnn_axs[-1, -1].axis('off')
+
     output_ode_rnns = []
 
     # output_ax_gru = plt.axes(projection='3d')
@@ -399,7 +401,6 @@ def single_model_plot(epochs, device_params, method, time_steps):
     for i in range(len(data_gens)):
 
         data_gen = data_gens[i]
-        output_ax_ode = ode_rnn_axs[i]
         
         # Build, train, and plot model output
         ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
@@ -423,23 +424,31 @@ def single_model_plot(epochs, device_params, method, time_steps):
         ax_loss.plot(list(range(epochs)), losses_gru_rnn, color="red", linewidth=1)
 
     # Plot each of the 3D outputs of each ODE RNN model
+    count = 0
     for i, output_ax_ode in enumerate(ode_rnn_axs.flat):
 
-        output_ode_rnn = output_ode_rnns[i]
-        output_ax_ode.plot3D(output_ode_rnn[0], output_ode_rnn[1], output_ode_rnn[2], color=colors[i], linewidth=1.5)
-        
-        title_text = "ODE-RNN noise +" + noise_labels[i]
+        if count == 5:
+            break
+
+        title_text = "ODE-RNN noise +" + noise_labels[count]
         output_ax_ode.set_title(title_text)
 
-        data_gen = data_gens[i]
+        data_gen = data_gens[count]
 
         output_ax_ode.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
         d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
         output_ax_ode.scatter3D(d1, d2, d3, 'blue')
 
+        output_ode_rnn = output_ode_rnns[count]
+        output_ax_ode.plot3D(output_ode_rnn[0], output_ode_rnn[1], output_ode_rnn[2], color="black", linewidth=1.5)
+
+        count += 1
+
     all_loss = []
     all_loss.append(Line2D([0], [0], color="blue", lw=4))
     all_loss.append(Line2D([0], [0], color="red", lw=4))
+
+    ode_rnn_fig.tight_layout()
 
     ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN"])
     fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
