@@ -462,8 +462,8 @@ def single_model_plot(epochs, device_params, method, time_steps):
         d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
         output_ax_gru.scatter3D(d1, d2, d3, 'blue')
 
-        output_ax_gru = output_gru_rnns[count]
-        output_ax_gru.plot3D(output_ax_gru[0], output_ax_gru[1], output_ax_gru[2], color="black", linewidth=1.5)
+        output_gru_rnn = output_gru_rnns[count]
+        output_ax_gru.plot3D(output_gru_rnn[0], output_gru_rnn[1], output_gru_rnn[2], color="black", linewidth=1.5)
 
         count += 1
 
