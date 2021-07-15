@@ -118,23 +118,24 @@ class Epoch_AM_Wave_Generator():
         self.train_window = train_window
         self.dimension = dimension
 
-        self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
-        self.x_2 = torch.linspace(0, 10*depth, n_pts).reshape(1, -1)
+        theta = torch.linspace(-4 * np.pi, 4 * np.pi, n_pts)
 
-        self.y_x = (torch.cos(self.x)).float()
-        self.y_y = (torch.sin(self.x) + torch.sin(self.x_2)).float()
+        self.x = torch.linspace(-2, 2, n_pts).reshape(1, -1)
+        r = self.x ** 2 + 1
+        self.y_x = r * torch.sin(theta)
+        self.y_y = r * torch.cos(theta)
+
+        self.x = self.x + 2
         self.y = torch.cat((self.y_x, self.y_y), axis=0)
+
+        self.true_z = self.x
+        self.true_x = self.y_x
+        self.true_y = self.y_y
 
         self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
 
         self.train_data = self.data[:cutoff]
         self.test_start = self.data[0:]
-
-        self.true_z = torch.linspace(0, depth, n_pts).squeeze().float()
-        self.true_z_2 = torch.linspace(0, 10*depth, n_pts).squeeze().float()
-
-        self.true_x = (torch.cos(self.true_z)).squeeze().float()
-        self.true_y = (torch.sin(self.x) + torch.sin(self.true_z_2)).squeeze().float()
 
 class Epoch_Spiral_Generator():
     
