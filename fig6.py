@@ -642,11 +642,11 @@ def single_model_plot(epochs, device_params, method, time_steps):
 def single_model_plot_hard(epochs, device_params, method, time_steps):
 
     # Create data generators with different nosie amplitudes
-    data_gen_n0 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
-    data_gen_n1 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
-    data_gen_n2 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
-    data_gen_n3 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
-    data_gen_n4 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2)
+    data_gen_n0 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.05)
+    data_gen_n1 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.075)
+    data_gen_n2 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.10)
+    data_gen_n3 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.25)
+    data_gen_n4 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.50)
 
     data_gens = [data_gen_n0, data_gen_n1, data_gen_n2, data_gen_n3, data_gen_n4]
     noise_labels = ["0.05", "0.075", "0.1", "0.25", "0.5"]
@@ -711,7 +711,7 @@ def single_model_plot_hard(epochs, device_params, method, time_steps):
 
         data_gen = data_gens[count]
 
-        output_ax_ode.plot3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'gray')
+        output_ax_ode.plot3D(data_gen.true_x.squeeze(), data_gen.true_y.squeeze(), data_gen.true_z.squeeze(), 'gray')
         d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
         output_ax_ode.scatter3D(d1, d2, d3, 'blue')
 
@@ -732,7 +732,7 @@ def single_model_plot_hard(epochs, device_params, method, time_steps):
 
         data_gen = data_gens[count]
 
-        output_ax_gru.plot3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'gray')
+        output_ax_gru.plot3D(data_gen.true_x.squeeze(), data_gen.true_y.squeeze(), data_gen.true_z.squeeze(), 'gray')
         d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
         output_ax_gru.scatter3D(d1, d2, d3, 'blue')
 
@@ -798,7 +798,7 @@ device_params = {"Vdd": 0.2,
 }
 
 # single_model_plot(30, device_params, "euler", 1)
-single_model_plot_hard(30, device_params, "euler", 1)
+single_model_plot_hard(125, device_params, "euler", 0.5)
 
 # graph_average_performance(1, 30, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)

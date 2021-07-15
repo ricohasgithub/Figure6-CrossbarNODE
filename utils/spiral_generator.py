@@ -109,7 +109,7 @@ class Epoch_Noise_Spiral_Generator():
 
 class Epoch_AM_Wave_Generator():
 
-    def __init__(self, n_pts, cutoff, depth, train_window, dimension):
+    def __init__(self, n_pts, cutoff, depth, train_window, dimension, noise):
 
         # Store instance variables
         self.n_pts = n_pts
@@ -122,15 +122,18 @@ class Epoch_AM_Wave_Generator():
 
         self.x = torch.linspace(-2, 2, n_pts).reshape(1, -1)
         r = self.x ** 2 + 1
-        self.y_x = r * torch.sin(theta)
-        self.y_y = r * torch.cos(theta)
+        self.y_x = r * (torch.sin(theta) + noise * np.random.randn(n_pts)).float()
+        self.y_y = r * (torch.cos(theta) + noise * np.random.randn(n_pts)).float()
 
         self.x = self.x + 2
         self.y = torch.cat((self.y_x, self.y_y), axis=0)
 
-        self.true_z = self.x
-        self.true_x = self.y_x
-        self.true_y = self.y_y
+        self.true_z = torch.linspace(-2, 2, n_pts).reshape(1, -1).float()
+        r = self.true_z ** 2 + 1
+        self.true_x = (r * torch.sin(theta)).float()
+        self.true_y = (r * torch.cos(theta)).float()
+
+        self.true_z = self.true_z + 2
 
         self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
 
