@@ -504,6 +504,275 @@ def single_model_plot(epochs, device_params, method, time_steps):
     ode_rnn_fig.savefig('./output/ode_noise_comp.png', dpi=600, transparent=True)
     gru_rnn_fig.savefig('./output/gru_noise_comp.png', dpi=600, transparent=True)
     
+def single_model_plot(epochs, device_params, method, time_steps):
+
+    # Create data generators with different nosie amplitudes
+    data_gen_n0 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.05)
+    data_gen_n1 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.075)
+    data_gen_n2 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.1)
+    data_gen_n3 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.25)
+    data_gen_n4 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.5)
+
+    data_gens = [data_gen_n0, data_gen_n1, data_gen_n2, data_gen_n3, data_gen_n4]
+    noise_labels = ["0.05", "0.075", "0.1", "0.25", "0.5"]
+    colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet"]
+
+    models_ode_rnn = []
+    models_gru_rnn = []
+
+    # Plot model outputs
+    ode_rnn_fig, ode_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
+    ode_rnn_axs[-1, -1].axis('off')
+
+    output_ode_rnns = []
+    cmap_ode_rnns = []
+
+    gru_rnn_fig, gru_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
+    gru_rnn_axs[-1, -1].axis('off')
+
+    output_gru_rnns = []
+    cmap_gru_rnns = []
+
+    # Plot loss history and average loss
+    fig_loss, ax_loss = plt.subplots()
+    fig_loss.suptitle('Average MSE Loss')
+
+    for i in range(len(data_gens)):
+
+        data_gen = data_gens[i]
+        
+        # Build, train, and plot model output
+        ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
+        losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
+        output_ode_rnns.append(output_ode_rnn)
+        models_ode_rnn.append(ode_rnn)
+
+        gru_rnn = GRU_RNN_autogen(2, 6, 2, device_params)
+        losses_gru_rnn, output_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
+        output_gru_rnns.append(output_gru_rnn)
+        models_gru_rnn.append(gru_rnn)
+
+        # Plot crossbar mapping and loss
+        fig_cmap_ode, ax_cmap_ode = plot_cmap(ode_rnn)
+        cmap_ode_rnns.append([fig_cmap_ode, ax_cmap_ode])
+        fig_loss_ode, ax_loss_ode = plot_loss(epochs, losses_ode_rnn)
+
+        fig_cmap_gru, ax_cmap_gru = plot_cmap(gru_rnn)
+        cmap_gru_rnns.append([fig_cmap_gru, ax_cmap_gru])
+        fig_loss_gru, ax_loss_gru = plot_loss(epochs, losses_gru_rnn)
+
+        ax_loss.plot(list(range(epochs)), losses_ode_rnn, color=colors[i], linewidth=1, linestyle="solid")
+        ax_loss.plot(list(range(epochs)), losses_gru_rnn, color=colors[i], linewidth=1, linestyle="dashed")
+
+    # Plot each of the 3D outputs of each ODE RNN model
+    count = 0
+    for i, output_ax_ode in enumerate(ode_rnn_axs.flat):
+
+        if count == 5:
+            break
+
+        title_text = "ODE-RNN noise +" + noise_labels[count]
+        output_ax_ode.set_title(title_text)
+
+        data_gen = data_gens[count]
+
+        output_ax_ode.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+        output_ax_ode.scatter3D(d1, d2, d3, 'blue')
+
+        output_ode_rnn = output_ode_rnns[count]
+        output_ax_ode.plot3D(output_ode_rnn[0], output_ode_rnn[1], output_ode_rnn[2], color="black", linewidth=1.5)
+
+        count += 1
+
+    # Plot each of the 3D outputs of each GRU RNN model
+    count = 0
+    for i, output_ax_gru in enumerate(gru_rnn_axs.flat):
+
+        if count == 5:
+            break
+
+        title_text = "GRU-RNN noise +" + noise_labels[count]
+        output_ax_gru.set_title(title_text)
+
+        data_gen = data_gens[count]
+
+        output_ax_gru.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+        output_ax_gru.scatter3D(d1, d2, d3, 'blue')
+
+        output_gru_rnn = output_gru_rnns[count]
+        output_ax_gru.plot3D(output_gru_rnn[0], output_gru_rnn[1], output_gru_rnn[2], color="black", linewidth=1.5)
+
+        count += 1
+
+    all_loss = []
+    all_loss.append(Line2D([0], [0], color="black", linestyle="solid", lw=4))
+    all_loss.append(Line2D([0], [0], color="black", linestyle="dashed", lw=4))
+
+    for color in colors:
+        all_loss.append(Line2D([0], [0], color=color, linestyle="solid", lw=4))
+
+    # Configure tight layout for 2x3 plots
+    ode_rnn_fig.tight_layout()
+    gru_rnn_fig.tight_layout()
+
+    # Plot all axis labels
+    ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "0.05", "0.075", "0.1", "0.25", "0.5"])
+
+    # Save all figures
+    for i in range (len(cmap_ode_rnns)):
+
+        cmap_ode = cmap_ode_rnns(i)
+
+        save_name = "./output/cmap/ode_rnn" + i + ".png"
+        cmap_ode[0].savefig(save_name, dpi=600, transparent=True)
+
+    for i in range (len(cmap_gru_rnns)):
+
+        cmap_gru = cmap_gru_rnns[i]
+
+        save_name = "./output/cmap/gru_rnn" + i + ".png"
+        cmap_gru[0].savefig(save_name, dpi=600, transparent=True)
+
+    fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
+    ode_rnn_fig.savefig('./output/ode_noise_comp.png', dpi=600, transparent=True)
+    gru_rnn_fig.savefig('./output/gru_noise_comp.png', dpi=600, transparent=True)
+
+def single_model_plot_hard(epochs, device_params, method, time_steps):
+
+    # Create data generators with different nosie amplitudes
+    data_gen_n0 = Epoch_Heart_Generator(160, 20, 40, 10, 2, 0.05)
+    data_gen_n1 = Epoch_Heart_Generator(160, 20, 40, 10, 2, 0.075)
+    data_gen_n2 = Epoch_Heart_Generator(160, 20, 40, 10, 2, 0.10)
+    data_gen_n3 = Epoch_Heart_Generator(160, 20, 40, 10, 2, 0.25)
+    data_gen_n4 = Epoch_Heart_Generator(160, 20, 40, 10, 2, 0.5)
+
+    data_gens = [data_gen_n0, data_gen_n1, data_gen_n2, data_gen_n3, data_gen_n4]
+    noise_labels = ["0.05", "0.075", "0.1", "0.25", "0.5"]
+    colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet"]
+
+    models_ode_rnn = []
+    models_gru_rnn = []
+
+    # Plot model outputs
+    ode_rnn_fig, ode_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
+    ode_rnn_axs[-1, -1].axis('off')
+
+    output_ode_rnns = []
+    cmap_ode_rnns = []
+
+    gru_rnn_fig, gru_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
+    gru_rnn_axs[-1, -1].axis('off')
+
+    output_gru_rnns = []
+    cmap_gru_rnns = []
+
+    # Plot loss history and average loss
+    fig_loss, ax_loss = plt.subplots()
+    fig_loss.suptitle('Average MSE Loss')
+
+    for i in range(len(data_gens)):
+
+        data_gen = data_gens[i]
+        
+        # Build, train, and plot model output
+        ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
+        losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
+        output_ode_rnns.append(output_ode_rnn)
+        models_ode_rnn.append(ode_rnn)
+
+        gru_rnn = GRU_RNN_autogen(2, 6, 2, device_params)
+        losses_gru_rnn, output_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
+        output_gru_rnns.append(output_gru_rnn)
+        models_gru_rnn.append(gru_rnn)
+
+        # Plot crossbar mapping and loss
+        fig_cmap_ode, ax_cmap_ode = plot_cmap(ode_rnn)
+        cmap_ode_rnns.append([fig_cmap_ode, ax_cmap_ode])
+        fig_loss_ode, ax_loss_ode = plot_loss(epochs, losses_ode_rnn)
+
+        fig_cmap_gru, ax_cmap_gru = plot_cmap(gru_rnn)
+        cmap_gru_rnns.append([fig_cmap_gru, ax_cmap_gru])
+        fig_loss_gru, ax_loss_gru = plot_loss(epochs, losses_gru_rnn)
+
+        ax_loss.plot(list(range(epochs)), losses_ode_rnn, color=colors[i], linewidth=1, linestyle="solid")
+        ax_loss.plot(list(range(epochs)), losses_gru_rnn, color=colors[i], linewidth=1, linestyle="dashed")
+
+    # Plot each of the 3D outputs of each ODE RNN model
+    count = 0
+    for i, output_ax_ode in enumerate(ode_rnn_axs.flat):
+
+        if count == 5:
+            break
+
+        title_text = "ODE-RNN noise +" + noise_labels[count]
+        output_ax_ode.set_title(title_text)
+
+        data_gen = data_gens[count]
+
+        output_ax_ode.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+        output_ax_ode.scatter3D(d1, d2, d3, 'blue')
+
+        output_ode_rnn = output_ode_rnns[count]
+        output_ax_ode.plot3D(output_ode_rnn[0], output_ode_rnn[1], output_ode_rnn[2], color="black", linewidth=1.5)
+
+        count += 1
+
+    # Plot each of the 3D outputs of each GRU RNN model
+    count = 0
+    for i, output_ax_gru in enumerate(gru_rnn_axs.flat):
+
+        if count == 5:
+            break
+
+        title_text = "GRU-RNN noise +" + noise_labels[count]
+        output_ax_gru.set_title(title_text)
+
+        data_gen = data_gens[count]
+
+        output_ax_gru.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+        d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+        output_ax_gru.scatter3D(d1, d2, d3, 'blue')
+
+        output_gru_rnn = output_gru_rnns[count]
+        output_ax_gru.plot3D(output_gru_rnn[0], output_gru_rnn[1], output_gru_rnn[2], color="black", linewidth=1.5)
+
+        count += 1
+
+    all_loss = []
+    all_loss.append(Line2D([0], [0], color="black", linestyle="solid", lw=4))
+    all_loss.append(Line2D([0], [0], color="black", linestyle="dashed", lw=4))
+
+    for color in colors:
+        all_loss.append(Line2D([0], [0], color=color, linestyle="solid", lw=4))
+
+    # Configure tight layout for 2x3 plots
+    ode_rnn_fig.tight_layout()
+    gru_rnn_fig.tight_layout()
+
+    # Plot all axis labels
+    ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "0.05", "0.075", "0.1", "0.25", "0.5"])
+
+    # Save all figures
+    for i in range (len(cmap_ode_rnns)):
+
+        cmap_ode = cmap_ode_rnns[i]
+
+        save_name = "./output/cmap/ode_rnn" + i + ".png"
+        cmap_ode[0].savefig(save_name, dpi=600, transparent=True)
+
+    for i in range (len(cmap_gru_rnns)):
+
+        cmap_gru = cmap_gru_rnns(i)
+
+        save_name = "./output/cmap/gru_rnn" + i + ".png"
+        cmap_gru[0].savefig(save_name, dpi=600, transparent=True)
+
+    fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
+    ode_rnn_fig.savefig('./output/ode_noise_comp.png', dpi=600, transparent=True)
+    gru_rnn_fig.savefig('./output/gru_noise_comp.png', dpi=600, transparent=True)
 
 # Device parameters for convenience
 device_params = {"Vdd": 0.2,
@@ -528,7 +797,8 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-single_model_plot(30, device_params, "euler", 1)
+# single_model_plot(30, device_params, "euler", 1)
+single_model_plot_hard(30, device_params, "euler", 1)
 
 # graph_average_performance(1, 30, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)

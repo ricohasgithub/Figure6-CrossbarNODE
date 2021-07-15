@@ -204,7 +204,7 @@ class Epoch_Square_Generator():
 
 class Epoch_Heart_Generator():
 
-    def __init__(self, n_pts, cutoff, depth, train_window, dimension):
+    def __init__(self, n_pts, cutoff, depth, train_window, dimension, noise):
 
         # Store instance variables
         self.n_pts = n_pts
@@ -216,8 +216,8 @@ class Epoch_Heart_Generator():
         self.x = torch.linspace(0, depth, n_pts).reshape(1, -1)
         self.x_2 = torch.linspace(0, 2*depth, n_pts).reshape(1, -1)
 
-        self.y_x = (torch.cos(self.x_2) + 0.05 * np.random.randn(n_pts)).float()
-        self.y_y = (torch.sin(self.x) + torch.sin(self.x_2) + 0.05 * np.random.randn(n_pts)).float()
+        self.y_x = (torch.cos(self.x_2) + noise * np.random.randn(n_pts)).float()
+        self.y_y = (torch.sin(self.x) + torch.sin(self.x_2) + noise * np.random.randn(n_pts)).float()
         self.y = torch.cat((self.y_x, self.y_y), axis=0)
 
         self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
