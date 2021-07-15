@@ -623,16 +623,16 @@ def single_model_plot(epochs, device_params, method, time_steps):
     # Save all figures
     for i in range (len(cmap_ode_rnns)):
 
-        cmap_ode = cmap_ode_rnns(i)
+        cmap_ode = cmap_ode_rnns[i]
 
-        save_name = "./output/cmap/ode_rnn" + i + ".png"
+        save_name = "./output/cmap/ode_rnn" + str(i) + ".png"
         cmap_ode[0].savefig(save_name, dpi=600, transparent=True)
 
     for i in range (len(cmap_gru_rnns)):
 
         cmap_gru = cmap_gru_rnns[i]
 
-        save_name = "./output/cmap/gru_rnn" + i + ".png"
+        save_name = "./output/cmap/gru_rnn" + str(i) + ".png"
         cmap_gru[0].savefig(save_name, dpi=600, transparent=True)
 
     fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
@@ -760,14 +760,14 @@ def single_model_plot_hard(epochs, device_params, method, time_steps):
 
         cmap_ode = cmap_ode_rnns[i]
 
-        save_name = "./output/cmap/ode_rnn" + i + ".png"
+        save_name = "./output/cmap/ode_rnn" + str(i) + ".png"
         cmap_ode[0].savefig(save_name, dpi=600, transparent=True)
 
     for i in range (len(cmap_gru_rnns)):
 
-        cmap_gru = cmap_gru_rnns(i)
+        cmap_gru = cmap_gru_rnns[i]
 
-        save_name = "./output/cmap/gru_rnn" + i + ".png"
+        save_name = "./output/cmap/gru_rnn" + str(i) + ".png"
         cmap_gru[0].savefig(save_name, dpi=600, transparent=True)
 
     fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
