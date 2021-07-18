@@ -381,6 +381,7 @@ def single_model_plot(epochs, device_params, method, time_steps):
     data_gens = [data_gen_n0, data_gen_n1, data_gen_n2, data_gen_n3, data_gen_n4]
     noise_labels = ["5%", "7.5%", "10%", "25%", "50%"]
     colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet"]
+    device_param_labels = []
 
     models_ode_rnn = []
     models_gru_rnn = []
@@ -391,17 +392,21 @@ def single_model_plot(epochs, device_params, method, time_steps):
     output_gru_rnns_list = []
     cmap_gru_rnns_list = []
 
-    # Plot loss history and average loss
-    fig_loss, ax_loss = plt.subplots()
-    fig_loss.suptitle('Average MSE Loss')
+    total_loss_ode = []
+    total_loss_gru = []
 
     device_params_list = []
     for i in range(0, 5):
         temp_device_params = device_params
-        temp_device_params["viability"] = 0.05 + 0.5 * i
+        temp_device_params["viability"] = 0.05 + 0.09 * i
         device_params_list.append(temp_device_params)
+        device_param_labels.append(0.05 + 0.09 * i)
 
     for device_param in device_params_list:
+
+        # Plot loss history and average loss
+        fig_loss, ax_loss = plt.subplots()
+        fig_loss.suptitle('Average MSE Loss for ' + str(device_param["viability"]))
 
         output_ode_rnns = []
         output_gru_rnns = []
@@ -414,12 +419,14 @@ def single_model_plot(epochs, device_params, method, time_steps):
             
             # Build, train, and plot model output
             ode_rnn = ODE_RNN_autogen(2, 6, 2, device_param, method, time_steps)
-            losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
+            losses_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
+            output_ode_rnn = ode_rnn_autogen_test(ode_rnn, data_gen)
             output_ode_rnns.append(output_ode_rnn)
             models_ode_rnn.append(ode_rnn)
 
             gru_rnn = GRU_RNN_autogen(2, 6, 2, device_param)
-            losses_gru_rnn, output_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
+            losses_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
+            output_gru_rnn = gru_rnn_autogen_test(gru_rnn, data_gen)
             output_gru_rnns.append(output_gru_rnn)
             models_gru_rnn.append(gru_rnn)
 
@@ -435,18 +442,42 @@ def single_model_plot(epochs, device_params, method, time_steps):
             ax_loss.plot(list(range(epochs)), losses_ode_rnn, color=colors[i], linewidth=1, linestyle="solid")
             ax_loss.plot(list(range(epochs)), losses_gru_rnn, color=colors[i], linewidth=1, linestyle="dashed")
 
+            # Append the loss to a list for future graphing
+            total_loss_ode.append(losses_ode_rnn)
+            total_loss_gru.append(losses_gru_rnn)
+
         output_ode_rnns_list.append(output_ode_rnns)
         output_gru_rnns_list.append(output_gru_rnns)
         cmap_ode_rnns_list.append(cmap_ode_rnns)
         cmap_gru_rnns_list.append(cmap_gru_rnns)
 
-    for output_ode_rnns in output_ode_rnns_list:
+        all_loss = []
+        all_loss.append(Line2D([0], [0], color="black", linestyle="solid", lw=4))
+        all_loss.append(Line2D([0], [0], color="black", linestyle="dashed", lw=4))
+
+        for color in colors:
+            all_loss.append(Line2D([0], [0], color=color, linestyle="solid", lw=4))
+
+        # Plot all axis labels
+        ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "5%", "7.5%", "10%", "25%", "50%"])
+        fig_loss.savefig('./output/loss' + str(device_param['viability']) + 'cmap_training_loss.png', dpi=600, transparent=True)
+
+    for k in range(len(output_ode_rnns_list)):
+
+        output_ode_rnns = output_ode_rnns_list[k]
 
         # Plot model outputs
         ode_rnn_fig, ode_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
         ode_rnn_axs[-1, -1].axis('off')
         gru_rnn_fig, gru_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
         gru_rnn_axs[-1, -1].axis('off')
+
+        # Configure tight layout for 2x3 plots
+        ode_rnn_fig.tight_layout()
+        gru_rnn_fig.tight_layout()
+
+        ode_rnn_fig.suptitle(device_param_labels[k], fontsize = 16)
+        gru_rnn_fig.suptitle(device_param_labels[k], fontsize = 16)
 
         # Plot each of the 3D outputs of each ODE RNN model
         count = 0
@@ -490,21 +521,10 @@ def single_model_plot(epochs, device_params, method, time_steps):
 
             count += 1
 
-    all_loss = []
-    all_loss.append(Line2D([0], [0], color="black", linestyle="solid", lw=4))
-    all_loss.append(Line2D([0], [0], color="black", linestyle="dashed", lw=4))
+        ode_rnn_fig.savefig('./output/output/' + str(device_param_labels[k]) + 'ode_noise_comp.png', dpi=600, transparent=True)
+        gru_rnn_fig.savefig('./output/output/' + str(device_param_labels[k]) + 'gru_noise_comp.png', dpi=600, transparent=True)
 
-    for color in colors:
-        all_loss.append(Line2D([0], [0], color=color, linestyle="solid", lw=4))
-
-    # Configure tight layout for 2x3 plots
-    ode_rnn_fig.tight_layout()
-    gru_rnn_fig.tight_layout()
-
-    # Plot all axis labels
-    ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "5%", "7.5%", "10%", "25%", "50%"])
-
-    # Save all figures
+    # Save all cmap figures
     for cmap_ode_rnns in cmap_ode_rnns_list:
         for i in range (len(cmap_ode_rnns)):
             cmap_ode = cmap_ode_rnns[i]
@@ -516,10 +536,6 @@ def single_model_plot(epochs, device_params, method, time_steps):
             cmap_gru = cmap_gru_rnns[i]
             save_name = "./output/cmap/gru_rnn" + str(i) + ".png"
             cmap_gru[0].savefig(save_name, dpi=600, transparent=True)
-
-    fig_loss.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
-    ode_rnn_fig.savefig('./output/ode_noise_comp.png', dpi=600, transparent=True)
-    gru_rnn_fig.savefig('./output/gru_noise_comp.png', dpi=600, transparent=True)
 
 def single_model_plot_hard(epochs, device_params, method, time_steps):
 
@@ -561,16 +577,18 @@ def single_model_plot_hard(epochs, device_params, method, time_steps):
         # Build, train, and plot model output
         ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
 
-        for k in range(0, 10):
-            data_gen_train = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.05)
-            ode_rnn_autogen_train(ode_rnn, data_gen_train, epochs)
+        # for k in range(0, 10):
+        #     data_gen_train = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.05)
+        #     ode_rnn_autogen_train(ode_rnn, data_gen_train, epochs)
         
-        losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
+        losses_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
+        output_ode_rnn = ode_rnn_autogen_test(ode_rnn, data_gen)
         output_ode_rnns.append(output_ode_rnn)
         models_ode_rnn.append(ode_rnn)
 
         gru_rnn = GRU_RNN_autogen(2, 6, 2, device_params)
-        losses_gru_rnn, output_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
+        losses_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
+        output_gru_rnn = gru_rnn_autogen_test(gru_rnn, data_gen)
         output_gru_rnns.append(output_gru_rnn)
         models_gru_rnn.append(gru_rnn)
 
@@ -665,8 +683,8 @@ def single_model_plot_hard(epochs, device_params, method, time_steps):
 device_params = {"Vdd": 0.2,
                  "r_wl": 20,
                  "r_bl": 20,
-                 "m": 256,
-                 "n": 256,
+                 "m": 72,
+                 "n": 72,
                  "r_on": 1e4,
                  "r_off": 1e5,
                  "dac_resolution": 4,
@@ -685,7 +703,7 @@ device_params = {"Vdd": 0.2,
 }
 
 single_model_plot(30, device_params, "euler", 1)
-# single_model_plot_hard(125, device_params, "euler", 0.5)
+# single_model_plot_hard(125, device_params, "euler", 0.1)
 
 # graph_average_performance(1, 30, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)

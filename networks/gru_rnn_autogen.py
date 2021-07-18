@@ -93,57 +93,13 @@ def train(model, data_gen, epochs):
 
         print('Epoch {:04d} | Total Loss {:.6f}'.format(epoch, loss_history[epoch]))
 
-    # Test
-    seq = data_gen.test_start
-    t = data_gen.test_start[0][0][1]
-    num_predict = 30
-    length = num_predict
-
-    dt = torch.sum(t[1:] - t[0:-1]) / (len(t) - 1)
-    output = []
-    all_t = []
-
-    #model.use_cb(False)
-    
-    with torch.no_grad():
-        for i, (example, label) in enumerate(seq):
-            prediction = model(example[1], example[0]).reshape(1, -1, 1)
-            output.append(prediction)
-            all_t.append(example[1].unsqueeze(0)[0][9])
-            
-        # for i in range(length):
-        #     prediction = model((t + dt), seq).reshape(1, -1, 1)
-        #     seq = torch.cat((seq[1:], prediction), axis=0)
-        #     all_t.append(t[-1].unsqueeze(0) + dt.unsqueeze(0))
-        #     t = torch.cat((t[1:], t[-1].unsqueeze(0) + dt.unsqueeze(0)), axis=0)
-        #     output.append(prediction)
-
-    output, times = torch.cat(output, axis=0), torch.cat(all_t, axis=0)
-
-    print(output.size())
-    print(times.size())
-
-    # ax = plt.axes(projection='3d')
-
-    o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), times.squeeze()
-    # o1, o2, o3 = output[:, 0].squeeze(), output[:, 1].squeeze(), output[:, 2].squeeze()
-    # ax.plot3D(o1, o2, o3, 'red')
-    # ax.scatter3D(o1, o2, o3, 'red')
-    
-    # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
-    # # d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.y[2, :].squeeze()
-    # # ax.plot3D(d1, d2, d3, 'gray')
-    # ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
-    # ax.scatter3D(d1, d2, d3, 'gray')
-
-    # plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
-
-    # return loss_history, ax
-    return loss_history, [o1, o2, o3]
+    return loss_history
 
 
 def test(model, data_gen):
     
+    # model.use_cb(True)
+
     # Test
     seq = data_gen.test_start
     t = data_gen.test_start[0][0][1]
