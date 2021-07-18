@@ -395,6 +395,13 @@ def single_model_plot(epochs, device_params, method, time_steps):
     total_loss_ode = []
     total_loss_gru = []
 
+    all_loss = []
+    all_loss.append(Line2D([0], [0], color="black", linestyle="solid", lw=4))
+    all_loss.append(Line2D([0], [0], color="black", linestyle="dashed", lw=4))
+
+    for color in colors:
+        all_loss.append(Line2D([0], [0], color=color, linestyle="solid", lw=4))
+
     device_params_list = []
     for i in range(0, 5):
         temp_device_params = device_params
@@ -451,16 +458,9 @@ def single_model_plot(epochs, device_params, method, time_steps):
         cmap_ode_rnns_list.append(cmap_ode_rnns)
         cmap_gru_rnns_list.append(cmap_gru_rnns)
 
-        all_loss = []
-        all_loss.append(Line2D([0], [0], color="black", linestyle="solid", lw=4))
-        all_loss.append(Line2D([0], [0], color="black", linestyle="dashed", lw=4))
-
-        for color in colors:
-            all_loss.append(Line2D([0], [0], color=color, linestyle="solid", lw=4))
-
         # Plot all axis labels
         ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "5%", "7.5%", "10%", "25%", "50%"])
-        fig_loss.savefig('./output/loss' + str(device_param['viability']) + 'cmap_training_loss.png', dpi=600, transparent=True)
+        fig_loss.savefig('./output/loss/' + str(device_param['viability']) + 'cmap_training_loss.png', dpi=600, transparent=True)
 
     for k in range(len(output_ode_rnns_list)):
 
