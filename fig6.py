@@ -10,6 +10,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.functional as F
 
+import copy
 import random
 import numpy as np
 import seaborn as sns
@@ -379,7 +380,7 @@ def single_model_plot(epochs, device_params, method, time_steps):
     data_gen_n4 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.5)
 
     data_gens = [data_gen_n0, data_gen_n1, data_gen_n2, data_gen_n3, data_gen_n4]
-    noise_labels = ["5%", "7.5%", "10%", "25%", "50%"]
+    noise_labels = ["5%", "14%", "23%", "32%", "41%"]
     colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet"]
     device_param_labels = []
 
@@ -404,11 +405,13 @@ def single_model_plot(epochs, device_params, method, time_steps):
 
     device_params_list = []
     for i in range(0, 5):
-        temp_device_params = device_params
-        temp_device_params["viability"] = 0.05 + 0.09 * i
+        temp_device_params = copy.deepcopy(device_params)
+        temp_device_params["viability"] = round(0.05 + 0.09 * i, 2)
         device_params_list.append(temp_device_params)
-        device_param_labels.append(0.05 + 0.09 * i)
+        device_param_labels.append(round(0.05 + 0.09 * i, 2))
 
+    print(device_params_list)
+    
     for device_param in device_params_list:
 
         # Plot loss history and average loss
@@ -458,9 +461,12 @@ def single_model_plot(epochs, device_params, method, time_steps):
         cmap_ode_rnns_list.append(cmap_ode_rnns)
         cmap_gru_rnns_list.append(cmap_gru_rnns)
 
+        plt.show()
+
         # Plot all axis labels
         ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "5%", "7.5%", "10%", "25%", "50%"])
         fig_loss.savefig('./output/loss/' + str(device_param['viability']) + 'cmap_training_loss.png', dpi=600, transparent=True)
+        print("FIG SAVED")
 
     for k in range(len(output_ode_rnns_list)):
 

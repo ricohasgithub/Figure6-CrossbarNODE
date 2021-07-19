@@ -118,7 +118,7 @@ class Epoch_AM_Wave_Generator():
         self.train_window = train_window
         self.dimension = dimension
 
-        theta = torch.linspace(-4 * np.pi, 4 * np.pi, n_pts)
+        theta = torch.linspace(-10 * np.pi, 10 * np.pi, n_pts)
 
         self.x = torch.linspace(-2, 2, n_pts).reshape(1, -1)
         r = self.x ** 2 + 1
