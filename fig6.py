@@ -380,7 +380,7 @@ def single_model_plot(epochs, device_params, method, time_steps):
     data_gen_n4 = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.5)
 
     data_gens = [data_gen_n0, data_gen_n1, data_gen_n2, data_gen_n3, data_gen_n4]
-    noise_labels = ["5%", "14%", "23%", "32%", "41%"]
+    noise_labels = ["5%", "7.5%", "10%", "25%", "50%"]
     colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet"]
     device_param_labels = []
 
@@ -404,13 +404,11 @@ def single_model_plot(epochs, device_params, method, time_steps):
         all_loss.append(Line2D([0], [0], color=color, linestyle="solid", lw=4))
 
     device_params_list = []
-    for i in range(0, 5):
+    for i in range(0, 1):
         temp_device_params = copy.deepcopy(device_params)
         temp_device_params["viability"] = round(0.05 + 0.09 * i, 2)
         device_params_list.append(temp_device_params)
         device_param_labels.append(round(0.05 + 0.09 * i, 2))
-
-    print(device_params_list)
     
     for device_param in device_params_list:
 
@@ -461,29 +459,29 @@ def single_model_plot(epochs, device_params, method, time_steps):
         cmap_ode_rnns_list.append(cmap_ode_rnns)
         cmap_gru_rnns_list.append(cmap_gru_rnns)
 
-        plt.show()
-
         # Plot all axis labels
         ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "5%", "7.5%", "10%", "25%", "50%"])
         fig_loss.savefig('./output/loss/' + str(device_param['viability']) + 'cmap_training_loss.png', dpi=600, transparent=True)
-        print("FIG SAVED")
 
     for k in range(len(output_ode_rnns_list)):
 
         output_ode_rnns = output_ode_rnns_list[k]
 
         # Plot model outputs
-        ode_rnn_fig, ode_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
+        ode_rnn_fig, ode_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(10, 12), subplot_kw=dict(projection='3d'))
         ode_rnn_axs[-1, -1].axis('off')
-        gru_rnn_fig, gru_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 12), subplot_kw=dict(projection='3d'))
+        gru_rnn_fig, gru_rnn_axs = plt.subplots(nrows=2, ncols=3, figsize=(10, 12), subplot_kw=dict(projection='3d'))
         gru_rnn_axs[-1, -1].axis('off')
 
         # Configure tight layout for 2x3 plots
         ode_rnn_fig.tight_layout()
         gru_rnn_fig.tight_layout()
 
-        ode_rnn_fig.suptitle(device_param_labels[k], fontsize = 16)
-        gru_rnn_fig.suptitle(device_param_labels[k], fontsize = 16)
+        ode_rnn_fig.subplots_adjust(top=0.9, hspace=0.2)
+        gru_rnn_fig.subplots_adjust(top=0.9, hspace=0.2)
+
+        ode_rnn_fig.suptitle("ODE-RNN +" + str(device_param_labels[k]) + " crossbar variability", fontsize = 16)
+        gru_rnn_fig.suptitle("GRU-RNN +" + str(device_param_labels[k]) + " crossbar variability", fontsize = 16)
 
         # Plot each of the 3D outputs of each ODE RNN model
         count = 0
@@ -492,7 +490,7 @@ def single_model_plot(epochs, device_params, method, time_steps):
             if count == 5:
                 break
 
-            title_text = "ODE-RNN noise +" + noise_labels[count]
+            title_text = "Training noise +" + noise_labels[count]
             output_ax_ode.set_title(title_text)
 
             data_gen = data_gens[count]
@@ -513,7 +511,7 @@ def single_model_plot(epochs, device_params, method, time_steps):
             if count == 5:
                 break
 
-            title_text = "GRU-RNN noise +" + noise_labels[count]
+            title_text = "Training noise +" + noise_labels[count]
             output_ax_gru.set_title(title_text)
 
             data_gen = data_gens[count]
