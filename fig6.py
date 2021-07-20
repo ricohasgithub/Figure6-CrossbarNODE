@@ -396,12 +396,13 @@ def single_model_plot(epochs, device_params, method, time_steps):
     total_loss_ode = []
     total_loss_gru = []
 
-    all_loss = []
-    all_loss.append(Line2D([0], [0], color="black", linestyle="solid", lw=4))
-    all_loss.append(Line2D([0], [0], color="black", linestyle="dashed", lw=4))
+    model_loss_legend = []
+    model_loss_legend.append(Line2D([0], [0], color="black", linestyle="solid", lw=2))
+    model_loss_legend.append(Line2D([0], [0], color="black", linestyle="dashed", lw=2))
 
+    train_loss_legend = []
     for color in colors:
-        all_loss.append(Line2D([0], [0], color=color, linestyle="solid", lw=4))
+        train_loss_legend.append(Line2D([0], [0], color=color, linestyle="solid", lw=2))
 
     device_params_list = []
     for i in range(0, 1):
@@ -414,7 +415,6 @@ def single_model_plot(epochs, device_params, method, time_steps):
 
         # Plot loss history and average loss
         fig_loss, ax_loss = plt.subplots()
-        fig_loss.suptitle('Average MSE Loss for ' + str(device_param["viability"]))
 
         output_ode_rnns = []
         output_gru_rnns = []
@@ -460,7 +460,12 @@ def single_model_plot(epochs, device_params, method, time_steps):
         cmap_gru_rnns_list.append(cmap_gru_rnns)
 
         # Plot all axis labels
-        ax_loss.legend(all_loss, ["ODE-RNN", "GRU-RNN", "5%", "7.5%", "10%", "25%", "50%"])
+        plt.xlabel("Epoch")
+        plt.ylabel("MSE loss on +" + str(device_param["viability"]) + " variability crossbar")
+
+        model_legend = ax_loss.legend(model_loss_legend, ["ODE-RNN", "GRU-RNN"], loc = "upper right")
+        fig_loss.gca().add_artist(model_legend)
+        ax_loss.legend(train_loss_legend, ["5%", "7.5%", "10%", "25%", "50%"], loc = (0.815, 0.545))
         fig_loss.savefig('./output/loss/' + str(device_param['viability']) + 'cmap_training_loss.png', dpi=600, transparent=True)
 
     for k in range(len(output_ode_rnns_list)):
@@ -581,10 +586,6 @@ def single_model_plot_hard(epochs, device_params, method, time_steps):
         # Build, train, and plot model output
         ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
 
-        # for k in range(0, 10):
-        #     data_gen_train = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.05)
-        #     ode_rnn_autogen_train(ode_rnn, data_gen_train, epochs)
-        
         losses_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
         output_ode_rnn = ode_rnn_autogen_test(ode_rnn, data_gen)
         output_ode_rnns.append(output_ode_rnn)
