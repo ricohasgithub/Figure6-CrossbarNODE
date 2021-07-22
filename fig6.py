@@ -124,7 +124,8 @@ def build_model(epochs, data_gen, device_params, method, time_steps):
     # ode_rnn = ODE_RNN(2, 6, 2, device_params, method, time_steps)
     # losses_ode_rnn, output_ode_rnn = ode_rnn_train(ode_rnn, data_gen, epochs)
     ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
-    losses_ode_rnn, output_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
+    losses_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
+    output_ode_rnn = ode_rnn_autogen_test(ode_rnn, data_gen)
 
     # Plot crossbar mapping and loss
     fig_cmap, ax_cmap = plot_cmap(ode_rnn)
@@ -289,46 +290,6 @@ def graph_model_difference(iters, epochs, device_params, method, time_steps):
 
     fig.savefig('./output/model_training_difference.png', dpi=600, transparent=True)
 
-def graph_step_size_difference(iters, epochs, method, device_params):
-
-    fixed_step_sizes = [1e-2, 1e-1, 1, 10, 100, 1000]
-    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
-
-    colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet", "black"]
- 
-    ax = plt.axes(projection='3d')
-
-    loss_fig, loss_ax = plt.subplots()
-    all_loss = []
-
-    data_gen = Epoch_Test_Spiral_Generator(80, 40, 20, 10, 2)
-
-    for i in range(len(fixed_step_sizes)):
-
-        print("NOW USING: ", fixed_step_sizes[i])
-
-        model, output, loss = build_model(epochs, data_gen, device_params, method, fixed_step_sizes[i])
-        ax.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
-        loss_ax.plot(list(range(epochs)), loss, colors[i], linewidth=1.5)
-
-        # loss_avg = get_average_performance(iters, epochs, device_params, fixed_step_methods[i], 1)
-        # ax.plot(list(range(epochs)), loss_avg, colors[i], linewidth=1.5)
-
-        all_loss.append(Line2D([0], [0], color=colors[i], lw=4))
-
-    loss_fig.savefig('./output/ode_solver_difference.png', dpi=600, transparent=True)
-    loss_ax.legend(all_loss, fixed_step_sizes)
-    ax.legend(all_loss, fixed_step_sizes)
-
-    # Plot true trajectory and observation points
-    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
-    ax.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
-    ax.scatter3D(d1, d2, d3, 'gray')
-
-    plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
-
-    return ax, loss_fig, loss_ax
-
 def graph_ode_solver_difference(iters, epochs, device_params):
 
     # List of ODE Solver Functions
@@ -370,6 +331,46 @@ def graph_ode_solver_difference(iters, epochs, device_params):
 
     return ax, loss_fig, loss_ax
 
+def graph_step_size_difference(iters, epochs, method, device_params, data_gen):
+
+    fixed_step_sizes = [1e-2, 1e-1, 1, 10, 100, 1000]
+    colors = ["maroon", "goldenrod", "limegreen", "teal", "darkviolet", "black"]
+ 
+    ode_rnn_fig, ode_rnn_axs = plt.subplots(subplot_kw=dict(projection='3d'))
+
+    loss_fig, loss_ax = plt.subplots()
+    all_loss = []
+
+    for i in range(len(fixed_step_sizes)):
+
+        print("NOW USING: ", fixed_step_sizes[i])
+
+        model, output, loss = build_model(epochs, data_gen, device_params, method, fixed_step_sizes[i])
+        ode_rnn_axs.plot3D(output[0], output[1], output[2], color=colors[i], linewidth=1.5)
+        loss_ax.plot(list(range(epochs)), loss, colors[i], linewidth=1.5)
+
+        # loss_avg = get_average_performance(iters, epochs, device_params, fixed_step_methods[i], 1)
+        # ax.plot(list(range(epochs)), loss_avg, colors[i], linewidth=1.5)
+
+        all_loss.append(Line2D([0], [0], color=colors[i], lw=2))
+
+    plt.xlabel("Epoch")
+    plt.ylabel("MSE loss on +" + str(device_params["viability"]) + " variability crossbar")
+
+    loss_fig.savefig('./output/ode_step_difference.png', dpi=600, transparent=True)
+    loss_ax.legend(all_loss, fixed_step_sizes)
+    ode_rnn_axs.legend(all_loss, fixed_step_sizes)
+
+    # Plot true trajectory and observation points
+    d1, d2, d3 = data_gen.y[0, :].squeeze(), data_gen.y[1, :].squeeze(), data_gen.x.squeeze()
+    ode_rnn_axs.plot3D(data_gen.true_x, data_gen.true_y, data_gen.true_z, 'gray')
+    ode_rnn_axs.scatter3D(d1, d2, d3, 'gray')
+    ode_rnn_fig.suptitle("Time mesh differences on ODE-RNN")
+
+    plt.savefig('./output/ode_rnn.png', dpi=600, transparent=True)
+
+    return ode_rnn_axs, loss_fig, loss_ax
+
 def single_model_plot(epochs, device_params, method, time_steps):
 
     # Create data generators with different nosie amplitudes
@@ -405,7 +406,7 @@ def single_model_plot(epochs, device_params, method, time_steps):
         train_loss_legend.append(Line2D([0], [0], color=color, linestyle="solid", lw=2))
 
     device_params_list = []
-    for i in range(0, 1):
+    for i in range(0, 5):
         temp_device_params = copy.deepcopy(device_params)
         temp_device_params["viability"] = round(0.05 + 0.09 * i, 2)
         device_params_list.append(temp_device_params)
@@ -707,8 +708,11 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-single_model_plot(30, device_params, "euler", 1)
+data_gen = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.05)
+
+# single_model_plot(30, device_params, "euler", 1)
 # single_model_plot_hard(125, device_params, "euler", 0.1)
+graph_step_size_difference(1, 30, "euler", device_params, data_gen)
 
 # graph_average_performance(1, 30, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)
