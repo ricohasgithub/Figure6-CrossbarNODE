@@ -31,6 +31,7 @@ class ODE_Func(nn.Module):
 
     def use_cb(self, state):
         self.linear.use_cb(state)
+        self.linear2.use_cb(state)
 
 class ODE_RNN(nn.Module):
 

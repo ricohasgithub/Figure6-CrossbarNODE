@@ -118,22 +118,25 @@ class Epoch_AM_Wave_Generator():
         self.train_window = train_window
         self.dimension = dimension
 
-        theta = torch.linspace(-10 * np.pi, 10 * np.pi, n_pts)
+        theta = torch.linspace(-10 * np.pi, 10 * np.pi, 2*n_pts)
 
-        self.x = torch.linspace(-2, 2, n_pts).reshape(1, -1)
+        self.x = torch.cat((torch.linspace(-depth, depth, n_pts).reshape(1, -1), torch.linspace(-depth, depth, n_pts).reshape(1, -1)), 1).reshape(1, -1)
         r = self.x ** 2 + 1
-        self.y_x = r * (torch.sin(theta) + noise * np.random.randn(n_pts)).float()
-        self.y_y = r * (torch.cos(theta) + noise * np.random.randn(n_pts)).float()
+        self.y_x = r * (torch.sin(theta) + noise * np.random.randn(2*n_pts)).float()
+        self.y_y = r * (torch.cos(theta) + noise * np.random.randn(2*n_pts)).float()
 
-        self.x = self.x + 2
+        self.x = torch.linspace(-depth, depth, 2* n_pts).reshape(1, -1)
+
+        self.x = self.x + depth
         self.y = torch.cat((self.y_x, self.y_y), axis=0)
 
-        self.true_z = torch.linspace(-2, 2, n_pts).reshape(1, -1).float()
+        self.true_z = torch.cat((torch.linspace(-depth, depth, n_pts).reshape(1, -1), torch.linspace(-depth, depth, n_pts).reshape(1, -1)), 1).reshape(1, -1)
         r = self.true_z ** 2 + 1
         self.true_x = (r * torch.sin(theta)).float()
         self.true_y = (r * torch.cos(theta)).float()
 
-        self.true_z = self.true_z + 2
+        self.true_z = torch.linspace(-depth, depth, 2* n_pts).reshape(1, -1)
+        self.true_z = self.true_z + depth
 
         self.data = [((self.y[:, i:i+train_window].reshape(-1, dimension, 1), self.x[:, i:i+train_window].reshape(-1, 1, 1)), (self.y[:, i+train_window:i+train_window+1].reshape(dimension, -1))) for i in range(self.y.size(1) - train_window)]
 

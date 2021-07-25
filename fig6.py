@@ -406,7 +406,7 @@ def single_model_plot(epochs, device_params, method, time_steps):
         train_loss_legend.append(Line2D([0], [0], color=color, linestyle="solid", lw=2))
 
     device_params_list = []
-    for i in range(0, 5):
+    for i in range(0, 1):
         temp_device_params = copy.deepcopy(device_params)
         temp_device_params["viability"] = round(0.05 + 0.09 * i, 2)
         device_params_list.append(temp_device_params)
@@ -550,11 +550,11 @@ def single_model_plot(epochs, device_params, method, time_steps):
 def single_model_plot_hard(epochs, device_params, method, time_steps):
 
     # Create data generators with different nosie amplitudes
-    data_gen_n0 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.05)
-    data_gen_n1 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.075)
-    data_gen_n2 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.10)
-    data_gen_n3 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.25)
-    data_gen_n4 = Epoch_AM_Wave_Generator(80, 20, 40, 10, 2, 0.50)
+    data_gen_n0 = Epoch_AM_Wave_Generator(80, 80, 2, 10, 2, 0.05)
+    data_gen_n1 = Epoch_AM_Wave_Generator(80, 80, 2, 10, 2, 0.075)
+    data_gen_n2 = Epoch_AM_Wave_Generator(80, 80, 2, 10, 2, 0.10)
+    data_gen_n3 = Epoch_AM_Wave_Generator(80, 80, 2, 10, 2, 0.25)
+    data_gen_n4 = Epoch_AM_Wave_Generator(80, 80, 2, 10, 2, 0.50)
 
     data_gens = [data_gen_n0, data_gen_n1, data_gen_n2, data_gen_n3, data_gen_n4]
     noise_labels = ["0.05", "0.075", "0.1", "0.25", "0.5"]
@@ -586,6 +586,7 @@ def single_model_plot_hard(epochs, device_params, method, time_steps):
         
         # Build, train, and plot model output
         ode_rnn = ODE_RNN_autogen(2, 6, 2, device_params, method, time_steps)
+        # print(sum(j.numel() for j in list(ode_rnn.parameters())))
 
         losses_ode_rnn = ode_rnn_autogen_train(ode_rnn, data_gen, epochs)
         output_ode_rnn = ode_rnn_autogen_test(ode_rnn, data_gen)
@@ -593,6 +594,8 @@ def single_model_plot_hard(epochs, device_params, method, time_steps):
         models_ode_rnn.append(ode_rnn)
 
         gru_rnn = GRU_RNN_autogen(2, 6, 2, device_params)
+        # print(sum(j.numel() for j in list(gru_rnn.parameters())))
+
         losses_gru_rnn = gru_rnn_autogen_train(gru_rnn, data_gen, epochs)
         output_gru_rnn = gru_rnn_autogen_test(gru_rnn, data_gen)
         output_gru_rnns.append(output_gru_rnn)
@@ -708,11 +711,11 @@ device_params = {"Vdd": 0.2,
                  "viability": 0.05,
 }
 
-data_gen = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.05)
+# data_gen = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.05)
 
 # single_model_plot(30, device_params, "euler", 1)
 # single_model_plot_hard(125, device_params, "euler", 0.1)
-graph_step_size_difference(1, 30, "euler", device_params, data_gen)
+# graph_step_size_difference(1, 30, "euler", device_params, data_gen)
 
 # graph_average_performance(1, 30, device_params, "euler", 1)
 # graph_ode_solver_difference(10, 30, device_params)
@@ -720,11 +723,11 @@ graph_step_size_difference(1, 30, "euler", device_params, data_gen)
 
 # graph_model_difference(1, 30, device_params, "euler", 1)
 
-# data_gen = Epoch_AM_Wave_Generator(80, 20, 40, 20, 2)
+data_gen = Epoch_AM_Wave_Generator(80, 80, 2, 10, 2, 0.00)
 
-# ax = plt.axes(projection='3d')
-# ax.plot3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'gray')
-# ax.scatter3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'blue')
+ax = plt.axes(projection='3d')
+ax.plot3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'gray')
+ax.scatter3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'blue')
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
