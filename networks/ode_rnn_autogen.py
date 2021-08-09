@@ -112,9 +112,10 @@ def train(model, data_gen, epochs):
             prediction = model(example[1], example[0])
 
             loss = loss_function(prediction, label)
-            epoch_loss.append(loss)
             loss.backward()
             optimizer.step()
+
+            epoch_loss.append(loss.detach().numpy())
 
             # model.remap()
         

@@ -713,7 +713,7 @@ device_params = {"Vdd": 0.2,
 
 # data_gen = Epoch_Noise_Spiral_Generator(80, 20, 40, 10, 2, 0.05)
 
-# single_model_plot(30, device_params, "euler", 1)
+single_model_plot(30, device_params, "euler", 1)
 # single_model_plot_hard(125, device_params, "euler", 0.1)
 # graph_step_size_difference(1, 30, "euler", device_params, data_gen)
 
@@ -723,11 +723,11 @@ device_params = {"Vdd": 0.2,
 
 # graph_model_difference(1, 30, device_params, "euler", 1)
 
-data_gen = Epoch_AM_Wave_Generator(80, 80, 2, 10, 2, 0.00)
+# data_gen = Epoch_AM_Wave_Generator(80, 80, 2, 10, 2, 0.00)
 
-ax = plt.axes(projection='3d')
-ax.plot3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'gray')
-ax.scatter3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'blue')
+# ax = plt.axes(projection='3d')
+# ax.plot3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'gray')
+# ax.scatter3D(data_gen.y_x.squeeze(), data_gen.y_y.squeeze(), data_gen.x.squeeze(), 'blue')
 
 # ode_rnn = GRU_RNN(2, 6, 2, device_params)
 # losses_ode_rnn, output_ode_rnn = gru_train(ode_rnn, data_gen, epochs)
